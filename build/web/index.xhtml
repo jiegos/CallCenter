@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+    <h:head>
+        <title>Welcome</title>
+    </h:head>
+    <h:body> 
+
+        <p:growl id="growl" showDetail="true" sticky="true"/>
+        <h:form>
+            <p:panelGrid columns="2" style=" position: absolute; top: 200px ; left: 400px;">
+                <f:facet name="header">Авторизация</f:facet>
+                <p:outputLabel value="Введите логин: "/>
+                <p:inputText value="#{login.usr}"/>
+                <p:outputLabel value="Введите пароль: "/>
+                <p:password value="#{login.pass}"/>
+                <f:facet name="footer">
+                    <p:commandButton  value="Войти" action="#{login.loginControl}"/>
+                </f:facet>                
+            </p:panelGrid>
+        </h:form>
+    </h:body>
+
+
+</html>
+

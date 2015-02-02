@@ -1,0 +1,492 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <f:view contentType="text/html">
+        <h:head>
+
+            <style type="text/css">
+                .ui-widget,.ui-widget .ui-widget {
+                    font-size: 90% !important;                
+                }
+                .vyrovnyat {
+                    text-align: center;
+                    font-size:  large;
+                }
+                .myLayoutStyleClass .ui-layout-unit-content{
+                    background:  white;
+                }
+                .red {
+                    color:  red !important;
+                }
+                .black {
+                    color: black !important;
+                }
+            </style>
+
+            <f:facet name="first">
+                <meta content='text/html; charset=UTF-8' http-equiv="Content-Type"/>
+                <title>Welcome</title>
+            </f:facet>
+        </h:head>
+
+        <h:body >
+            <p:growl id="test" showDetail="true" sticky="true"/>
+            <p:layout fullPage="true" > 
+                <h:form id="polls">                    
+                    <p:poll interval="1"  widgetVar="p2"  onsuccess="p2.stop()" listener="#{agentsTableBean.findAll}" update=":f2,:f3,:f6,:f7"/>
+                    <p:poll interval="1"  widgetVar="p1" onsuccess="p1.stop()" listener="#{viewListsBean.findLists}" update=":f2,:f3,:f4,:f5" />
+                    <p:poll interval="1"  widgetVar="p4" onsuccess="p4.stop()" listener="#{viewListsBean.refreshAll}" update=":f2,:f3,:f4,:f5,:f6,:f7,:f8"/>
+                    <p:poll interval="1"  widgetVar="p5" onsuccess="p5.stop()" listener="#{operatorInfoBean.callInfo}" update=":f6"/>
+                    <p:poll interval="1"  widgetVar="p6" onsuccess="p6.stop()" listener="#{operatorInfoBean.calltimeInfo}" update=":f6"/>
+                    <p:poll interval="1" autoStart="false"  widgetVar="p7"  stop="#{viewListsBean.pollstop}" listener="#{viewListsBean.isStopped}"/>
+                    <p:poll  interval="1"  widgetVar="p9" onsuccess="p9.stop()" listener="#{notificationBean.findNotificationByUser}" update=":f12"/>
+                    <p:poll widgetVar="p10" autoStart="false" interval="1"  onsuccess="p10.stop()" listener="#{viewListsBean.testButton}" />
+                    <p:poll widgetVar="p11" autoStart="false" interval="1"  onsuccess="p11.stop()" listener="#{testBean.test}"/>
+                </h:form>
+
+                <p:layoutUnit position="north"  styleClass="myLayoutStyleClass" style=" border-color:  white; background:  white;">
+
+                    <h:form style="text-align: center;  font-size: large;" >                       
+                        <p:outputLabel value="CallCenter"/>
+                    </h:form>
+                    <h:form>
+                        <p:outputLabel value="Пользователь: #{login.usr}"/><br/>
+                        <p:commandLink value="Выйти" action="#{login.logout}" />
+                    </h:form>                
+
+                </p:layoutUnit>
+
+                <p:layoutUnit position="south"  styleClass="myLayoutStyleClass" style=" border-color:  white; background:  white;" >
+                    <h:form style="text-align: center;" >                       
+                        <p:outputLabel value="Днепропетровск 2015 ©jiegos "/>
+                    </h:form>
+                </p:layoutUnit>
+
+                <p:layoutUnit position="west" size="230"  style=" border-color: darkgrey;  padding-left: 3px;">                   
+                    <h:form style="text-align:center" >
+
+                        <h:outputText value="Введите номер: "/><br/>
+                        <p:inputMask value="#{buttonCall.number}" mask="(999) 999-99-99" style="width:110px;"/><br/>
+                        <p:commandButton value="Позвонить" actionListener="#{buttonCall.buttonAction}" />  
+                    </h:form>
+                    <br/> 
+                    <h:form id="f1">
+                        <p:growl autoUpdate="true"/>
+
+                        <p:panelMenu>                           
+                            <p:submenu label="Список клиентов"  style=" font-size: 80%;">
+                                <p:menuitem value="Добавить" icon="ui-icon-plus" style=" font-size: 150%;"  onclick="dlg1.show()"  />
+                                <p:menuitem value="Показать" icon="ui-icon-search" style=" font-size: 150%;" actionListener="#{viewListsBean.showAllAgent}" update=":f2,:f3,:f4,:f5,:f6,:f7,:f8"/>                      
+                            </p:submenu>
+                            <p:submenu label="Листы обзвона" style=" font-size: 80%;">
+                                <p:menuitem value="Создать" icon="ui-icon-document" style=" font-size: 150%;" actionListener="#{viewListsBean.addList}" update=":f2,:f3,:f4,:f5,:f6,:f7,:f8"/>                                                      
+                                <p:menuitem value="Загрузить" icon="ui-icon-folder-open" style=" font-size: 150%;" actionListener="#{viewListsBean.showUpload}" update=":f4,:f8"/>                                                                                      
+                                <p:menuitem value="Показать" icon="ui-icon-search" style=" font-size: 150%;" actionListener="#{viewListsBean.showAllLists}" update=":f2,:f3,:f4,:f5,:f6,:f7,:f8"/>     
+                            </p:submenu>                           
+                        </p:panelMenu>
+                    </h:form>
+                    <br/> 
+                    <h:form id="f4" style=" width: 221px;">
+                        <p:dataTable   rendered="#{viewListsBean.render4}" 
+                                       id="listsDT"  value="#{viewListsBean.table2}" 
+                                       var="item"  selectionMode="single" 
+                                       selection="#{viewListsBean.selectedList}" 
+                                       rowKey="#{item}"
+                                       paginator="true"
+                                       paginatorTemplate="{CurrentPageReport} {PreviousPageLink} {NextPageLink}"
+                                       rowsPerPageTemplate="5,10,15"
+                                       rows="5"
+                                       paginatorPosition="bottom"                                       
+                                       >
+                            <p:ajax event="rowSelect" listener="#{viewListsBean.onRowSelect}" update=":f2,:f3,:f4,:f5"/>
+                            <p:column>
+                                <f:facet name="header" >
+                                    <h:outputText value="Список листов" />
+                                </f:facet>
+                                <h:outputText value="#{item}" />                              
+                            </p:column> 
+                        </p:dataTable>                        
+                    </h:form> 
+                    <br/>
+                    <h:form id="f8" enctype="multipart/form-data">    
+                        <p:growl id="messages" showDetail="true"/>                        
+                        <p:fileUpload    
+                            rendered="#{viewListsBean.render5}"                                
+                            mode="advanced"
+                            update="messages" 
+                            auto="true" label="Выберите файл (*.csv)" 
+                            sizeLimit="10000000"
+                            allowTypes="/(\.|\/)(csv)$/"
+                            fileUploadListener="#{fileUploadView.handleFileUpload}"
+                            /> 
+                    </h:form>
+                </p:layoutUnit>
+
+                <p:layoutUnit position="center" style=" border-color: darkgrey;" > 
+                    <h:form id="f2">
+                        <p:dataTable id="checkboxDT" rows="10" paginator="true"
+                                     paginatorPosition="bottom" 
+                                     rendered="#{viewListsBean.render}"  
+                                     var="item" value="#{agentsTableBean.table}" 
+                                     selection="#{agentsTableBean.selectedRows}" 
+                                     rowKey="#{item.id}">
+
+                            <p:ajax event="rowSelect" update="saveButton"/>
+                            <p:ajax event="rowUnselect" update="saveButton"/>
+                            <p:ajax event="rowSelectCheckbox" update="saveButton"/>
+                            <p:ajax event="rowUnselectCheckbox" update="saveButton"/>
+                            <p:ajax event="toggleSelect"   update="saveButton"/>
+
+                            <f:facet name="header">
+                                <h:outputText value="#{viewListsBean.tablename}"/>
+                            </f:facet>
+                            <p:column id="checkbox" selectionMode="multiple" style="width:16px;text-align:center" />
+
+                            <p:column sortBy="#{item.kontragId.fullname}" filterMatchMode="contains" filterBy="#{item.kontragId.fullname}">
+                                <f:facet name="header">
+                                    <h:outputText value="ФИО"/>
+                                </f:facet>
+                                <h:outputText value="#{item.kontragId.fullname}"/>
+                            </p:column>
+                            <p:column sortBy="#{item.phone}" filterMatchMode="contains" filterBy="#{item.phone}" >
+                                <f:facet name="header">
+                                    <h:outputText value="ТЕЛЕФОН"/>
+                                </f:facet>
+                                <h:outputText value="#{item.phone}"/>
+                            </p:column>
+                            <f:facet name="footer">
+                                <p:commandButton id="saveButton" value="Создать лист" icon="ui-icon-document" onclick="dlg4.show()"  update=":saveForm" disabled="#{empty agentsTableBean.selectedRows}"/>
+                            </f:facet>
+                        </p:dataTable>
+                    </h:form >
+                    <h:form id="f3">
+                        <p:dataTable id="singleDT" rows="10" paginator="true" paginatorPosition="bottom"  selectionMode="single" rendered="#{viewListsBean.render3}"  var="item" value="#{agentsTableBean.table}" selection="#{agentsTableBean.selectedRow}" rowKey="#{item.id}">
+                            <p:ajax event="rowSelect" listener="#{operatorInfoBean.agentInfo}" update="editButton deleteButton :f7"/>
+                            <p:ajax event="rowUnselect" update="editButton deleteButton :f7"/>
+                            <f:facet name="header">
+                                <h:outputText value="#{viewListsBean.tablename}"/>
+                            </f:facet>
+
+                            <p:column sortBy="#{item.kontragId.fullname}" filterMatchMode="contains" filterBy="#{item.kontragId.fullname}">
+                                <f:facet name="header">
+                                    <h:outputText value="ФИО"/>
+                                </f:facet>
+                                <h:outputText value="#{item.kontragId.fullname}"/>
+                            </p:column>
+                            <p:column sortBy="#{item.phone}" filterMatchMode="contains" filterBy="#{item.phone}">
+                                <f:facet name="header">
+                                    <h:outputText value="ТЕЛЕФОН"/>
+                                </f:facet>
+                                <h:outputText value="#{item.phone}"/>
+                            </p:column>
+                            <f:facet name="footer">
+                                <p:commandButton id="editButton"  value="Изменить"  icon="ui-icon-pencil" onclick="dlg2.show()"  update=":editForm" disabled="#{empty agentsTableBean.selectedRow}"/>
+                                <p:commandButton id="deleteButton" value="Удалить" icon="ui-icon-trash" onclick="dlg3.show()"  update=":deleteForm" disabled="#{empty   agentsTableBean.selectedRow}"/>  
+                            </f:facet>
+                        </p:dataTable>
+                    </h:form>  
+                    <h:form id="f5">                      
+                        <p:dataTable id="selectListDT" rendered="#{viewListsBean.render2}" value="#{viewListsBean.selectedLists3}" var="item" rowKey="#{item.id}" >              
+
+                            <f:facet name="header">
+                                <h:outputText value="#{viewListsBean.header}"/>
+                            </f:facet>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="ФИО"/>
+                                </f:facet>
+                                <h:outputText value="#{item.kontragId.fullname}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="ТЕЛЕФОН"/>
+                                </f:facet>
+                                <h:outputText value="#{item.phone}"/>
+                            </p:column>
+                            <f:facet name="footer">
+                                <p:commandButton value="Изменить"  icon="ui-icon-pencil" onclick="dlg6.show()" style=" left: -25%;"/>
+                                <p:commandButton value="Удалить" icon="ui-icon-trash"  actionListener="#{viewListsBean.deleteList}" update=":f2,:f3,:f4,:f5" style=" left: -25%;"/>
+                                <p:commandButton value="Выполнить обзвон"  actionListener="#{viewListsBean.buttonCallLists}" onclick="p7.start()" style=" left: -15%;"/>                             
+                            </f:facet>
+                        </p:dataTable>                         
+                        <p:poll interval="1"  widgetVar="p3" onsuccess="p3.stop()" listener="#{viewListsBean.findLists}" update=":f4:listsDT"/>
+                    </h:form>
+                </p:layoutUnit>
+
+                <p:layoutUnit position="east"  size="300"  style=" border-color: darkgrey;">                    
+                    <h:form id="f13">
+                        <p:commandButton  id="cb12" value="Список напоминаний" actionListener="#{notificationBean.findNotificationByUser}" onclick="dlg7.show()" styleClass="#{styleBean.color}" update="cb12"/>
+                        <p:commandButton icon="ui-icon-plus" actionListener="#{remainderBean.clearDescription}"/>
+                        <br/>                                                                      
+                        <p:poll widgetVar="p8" autoStart="false" interval="1"  onsuccess="p8.stop()" listener="#{styleBean.chaingColor}" update="cb12"/>
+                    </h:form>
+                    <p:growl widgetVar="growl3" life="2880000"  />
+                    <p:socket  onMessage="handleMessage" channel="#{remainderBean.channel}"/>                     
+                    <script type="text/javascript">
+                        function handleMessage(facesmessage) {
+                            facesmessage.severity = 'info';
+                            growl3.show([facesmessage]);
+                            p8.start();
+                        }
+                    </script>
+                    <p:socket  onMessage="callError" channel="#{remainderBean.channel}1"/>
+                    <script type="text/javascript">
+                        function callError() {
+                            p10.start();
+                        }
+                    </script>
+                     <p:socket  onMessage="doTest" channel="/notify"/>
+                     <script type="text/javascript">
+                        function doTest() {
+                            p11.start();
+                        }
+                    </script>
+                    <script type="text/javascript">
+                        PrimeFaces.locales ['ru'] = {
+                            closeText: 'Закрыть',
+                            prevText: 'Назад',
+                            nextText: 'Вперёд',
+                            monthNames: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
+                            monthNamesShort: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'],
+                            dayNames: ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Субота'],
+                            dayNamesShort: ['Воск', 'Пон', 'Вт', 'Ср', 'Четв', 'Пят', 'Суб'],
+                            dayNamesMin: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'],
+                            weekHeader: 'Неделя',
+                            firstDay: 1,
+                            isRTL: false,
+                            showMonthAfterYear: false,
+                            yearSuffix: '',
+                            timeOnlyTitle: 'Только время',
+                            timeText: 'Время',
+                            hourText: 'Час',
+                            minuteText: 'Мин',
+                            secondText: 'Сек',
+                            currentText: 'Сегодня',
+                            ampm: false,
+                            month: 'Месяц',
+                            week: 'неделя',
+                            day: 'День',
+                            allDayText: 'Весь день'
+                        };
+                    </script> 
+                    
+                    <h:form id="f6">
+                        <br/>
+                        <h:outputText value="Дополнительная информация"/>
+                        <hr/>
+                        <h:outputText  value="Количество контрагентов: "/>
+                        <h:outputText value="#{operatorInfoBean.count}"/><br/><br/>
+                        <h:outputText  value="Количество звонков: "/>
+                        <h:outputText value="#{operatorInfoBean.calls}"/> <br/>
+                        <h:outputText  value="С ответом: "/>
+                        <h:outputText value="#{operatorInfoBean.answered}"/> <br/>
+                        <h:outputText  value="Без ответа: "/>
+                        <h:outputText value="#{operatorInfoBean.noanswer}"/> <br/><br/>
+                        <h:outputText  value="Общее время звонков: "/>
+                        <h:outputText value="#{operatorInfoBean.times}"/><br/>
+                        <h:outputText  value="Время ожидания: "/>
+                        <h:outputText value="#{operatorInfoBean.busytime}"/> <br/>
+                        <h:outputText  value="Время разговоров: "/>
+                        <h:outputText value="#{operatorInfoBean.calltime}"/><br/><br/>
+
+                    </h:form>
+                    <h:form id="f7" >
+                        <p:fragment rendered="#{!empty agentsTableBean.selectedRow}" autoUpdate="true">
+                            <h:outputText value="Информация про клиента"/>
+                            <hr/>
+                            <h:outputText  value="Клиент: "/>
+                            <h:outputText value="#{agentsTableBean.selectedRow.kontragId.fullname} "/><br/><br/>
+                            <h:outputText  value="Количество звонков: " rendered="#{!empty operatorInfoBean.count2}"/>
+                            <h:outputText value="#{operatorInfoBean.count2}" rendered="#{!empty operatorInfoBean.count2}"/><br/><br/>                            
+                            <h:outputText  value="Телефон: "/>
+                            <h:outputText value="#{agentsTableBean.selectedRow.phone}"/> <br/>
+                            <h:outputText  value="Адрес: " rendered="#{!empty agentsTableBean.selectedRow.adress}"/>
+                            <h:outputText value="#{agentsTableBean.selectedRow.adress}" /> <br/>
+                            <h:outputText  value="Почта: " rendered="#{!empty agentsTableBean.selectedRow.email}"/>
+                            <h:outputText value="#{agentsTableBean.selectedRow.email}" />
+                        </p:fragment>
+                    </h:form>                    
+                </p:layoutUnit>
+            </p:layout>
+            <p:dialog header="Добавление клиента" widgetVar="dlg1" resizable="false" modal="true" height="180" dynamic="true" appendTo="@(body)">
+                <h:form id="createForm">
+                    <table border="0" >                               
+                        <tr>
+                            <td><p:outputLabel value="ФИО" /></td>
+                            <td><p:inputText id="firstname" title="Введите ФИО" value="#{agentsTableBean.fio}"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><p:outputLabel value="ТЕЛЕФОН" /></td>
+                            <td><p:inputText   title="Введите телефон" value="#{agentsTableBean.phone}"/></td>
+                        </tr>  
+                        <tr>
+                            <td><p:outputLabel value="АДРЕС" /></td>
+                            <td><p:inputText   title="Введите телефон" value="#{agentsTableBean.adress}"/></td>
+                        </tr>
+                        <tr>
+                            <td><p:outputLabel value="ПОЧТА" /></td>
+                            <td><p:inputText   title="Введите телефон" value="#{agentsTableBean.email}"/></td>
+                        </tr>
+                    </table>
+                    <br/>
+                    <p:commandButton value="Сохранить"  actionListener="#{agentsTableBean.createKontragent}" icon="ui-icon-disk"  oncomplete="dlg1.hide(),p2.start(),p5.start()" update=":f2,:f3,:f6,:f7"/>
+                    <p:commandButton value="Закрыть" onclick="dlg1.hide()" icon="ui-icon-close"/>
+                </h:form>
+            </p:dialog>
+            <p:dialog header="Редактирование" widgetVar="dlg2" resizable="false" modal="true" height="170" dynamic="true" appendTo="@(body)">
+                <h:form id="editForm">
+                    <table border="0" >                               
+                        <tr>
+                            <td><p:outputLabel value="ФИО" /></td>
+                            <td><p:inputText title="Введите ФИО" value="#{agentsTableBean.selectedRow.kontragId.fullname}" /></td>
+                        </tr>
+                        <tr>
+                            <td><p:outputLabel value="ТЕЛЕФОН" /></td>
+                            <td><p:inputText   title="Введите телефон" value="#{agentsTableBean.selectedRow.phone}"/><p:commandButton icon="ui-icon-plus"  actionListener="#{agentsTableBean.editKontragent}"/></td>
+                        </tr> 
+                        <tr>
+                            <td><p:outputLabel value="АДРЕС" /></td>
+                            <td><p:inputText   title="Введите телефон" value="#{agentsTableBean.selectedRow.adress}"/></td>
+                        </tr>
+                        <tr>
+                            <td><p:outputLabel value="ПОЧТА" /></td>
+                            <td><p:inputText   title="Введите телефон" value="#{agentsTableBean.selectedRow.email}"/></td>
+                        </tr>
+                    </table>
+                    <br/>
+                    <p:commandButton value="Сохранить"  actionListener="#{agentsTableBean.editClient}" icon="ui-icon-disk"  oncomplete="dlg2.hide()" update=":f2,:f3,:f6,:f7"/>
+                    <p:commandButton value="Закрыть" onclick="dlg2.hide()" icon="ui-icon-close"/>
+                </h:form>
+            </p:dialog> 
+            <p:dialog header="Удаление" widgetVar="dlg3" resizable="false" modal="true" height="140" dynamic="true" appendTo="@(body)">
+                <h:form id="deleteForm">
+                    <table border="0" >                               
+                        <tr>
+                            <td><p:outputLabel value="ФИО" /></td>
+                            <td><h:outputText value="#{agentsTableBean.selectedRow.kontragId.fullname}" /></td>
+                        </tr>
+
+                        <tr>
+                            <td><p:outputLabel value="ТЕЛЕФОН" /></td>
+                            <td><h:outputText  value="#{agentsTableBean.selectedRow.phone}"/></td>
+                        </tr>
+                        <tr>
+                            <td><p:outputLabel value="АДРЕС" /></td>
+                            <td><h:outputText   title="Введите телефон" value="#{agentsTableBean.selectedRow.adress}"/></td>
+                        </tr>
+                        <tr>
+                            <td><p:outputLabel value="ПОЧТА" /></td>
+                            <td><h:outputText   title="Введите телефон" value="#{agentsTableBean.selectedRow.email}"/></td>
+                        </tr>
+                    </table>
+                    <br/>
+                    <p:commandButton value="Удалить"  actionListener="#{agentsTableBean.deleteClient}" icon="ui-icon-check"  oncomplete="dlg3.hide(),p2.start(),p5.start()" />
+                    <p:commandButton value="Закрыть" onclick="dlg3.hide()" icon="ui-icon-close"/>
+                </h:form>
+            </p:dialog> 
+            <p:dialog header="Создание листа" widgetVar="dlg4" resizable="false" modal="true" height="120" dynamic="true" appendTo="@(body)">
+                <h:form id="saveForm">                           
+                    <p:outputLabel value="Введите названия листа"/>
+                    <br/>
+                    <br/>
+                    <p:inputText value="#{agentsTableBean.listname}"/> 
+                    <br/>
+                    <br/>
+                    <p:commandButton value="Сохранить"  actionListener="#{agentsTableBean.buttonSaveList}" icon="ui-icon-disk"  oncomplete="dlg4.hide(),p1.start()"/>
+                    <p:commandButton value="Закрыть" onclick="dlg4.hide()" icon="ui-icon-close"/>
+                </h:form>
+            </p:dialog>
+            <p:dialog header="Обзвон" widgetVar="dlg5" resizable="false" modal="true">
+                <p:ajax event="close" listener="#{viewListsBean.onClose}"/>
+                <h:form id="f9"> 
+                    <table cellpadding="4">
+                        <tr style=" font-size: 120%; font-weight: 500; text-align: center;"><td style="border: 2px;"><p:outputLabel value="Текущий звонок"/></td>                         
+                            <td><p:outputLabel value="Следующий звонок"/></td></tr>
+                        <tr><td><h:outputText value="#{viewListsBean.fullname}"/></td>                         
+                            <td><h:outputText value="#{viewListsBean.fullname2}"/></td></tr>
+                        <tr><td align="center" colspan="2"><h:outputText value="#{viewListsBean.countcall+1} звонок из #{viewListsBean.allcall}"/></td>                         
+                            <td></td></tr>                      
+                    </table>
+                </h:form>
+                <hr/>
+                <h:form id="f10">
+                    <table width="100%">
+                        <tr><td><p:outputLabel value="Результаты звонка (обязательно):"/></td>
+                            <td><p:commandButton value="Напоминание" actionListener="#{remainderBean.clearDescription}"  immediate="true" validateClient="false" /></td></tr>
+                        <tr><td><p:selectOneMenu id="selectemenu" value="#{viewListsBean.statuscall}" required="true" requiredMessage="Выберите один из вариантов">
+                                    <f:selectItem itemLabel="Выберите одно" itemValue="" />
+                                    <f:selectItem itemLabel="Продажа" itemValue="Продажа" />
+                                    <f:selectItem itemLabel="Неверный номер" itemValue="Неверный номер"/>                                    
+                                    <f:selectItem itemLabel="Недействительный номер" itemValue="Недействительный номер"/>
+                                    <f:selectItem itemLabel="Голосовая почта" itemValue="Голосовая почта"/>
+                                    <f:selectItem itemLabel="Номер отключен" itemValue="Номер отключен"/>
+                                    <f:selectItem itemLabel="Нет ответа" itemValue="Нет ответа"/>
+                                    <f:selectItem itemLabel="Отправить факс" itemValue="Отправить факс"/>
+                                    <f:selectItem itemLabel="Отправить почту" itemValue="Отправить почту"/>
+                                    <f:selectItem itemLabel="Успешно" itemValue="Успешно"/>
+                                    <f:selectItem itemLabel="Неудача" itemValue="Неудача"/>
+                                    <f:selectItem itemLabel="Автоответчик" itemValue="Автоответчик"/>
+                                    <f:selectItem itemLabel="Больше не звонить" itemValue="Больше не звонить"/>
+                                    <f:selectItem itemLabel="Не интересует" itemValue="Не интересует"/>
+                                    <f:selectItem itemLabel="Презвонить позже" itemValue="Презвонить позже"/>
+                                    <f:selectItem itemLabel="Вызов на замер" itemValue="Вызов на замер"/>                                    
+                                </p:selectOneMenu></td>
+                            <td><p:commandButton value="Остановить" id="cb11" actionListener="#{viewListsBean.stopCall}" validateClient="true" disabled="#{viewListsBean.continuecall}"/></td></tr>
+                        <tr><td><p:inputTextarea id="textarea" value="#{viewListsBean.comment}"  required="true" requiredMessage="Добавьте комментарий к звонку"/></td>
+                            <td style=" vertical-align: top;"><p:commandButton id="cb10"  update="f10" validateClient="true" title="Нужно заполнить поле и выбрать один из вариантов" value="#{viewListsBean.buttontitle}" actionListener="#{viewListsBean.continueCall}" disabled="#{viewListsBean.continuecall}"/></td></tr>
+                    </table>
+                </h:form>
+            </p:dialog>
+            <p:dialog header="Изменения названия листа" widgetVar="dlg6" resizable="false" modal="true" height="120" dynamic="true" appendTo="@(body)">
+                <h:form id="editNameListForm">                           
+                    <p:outputLabel value="Введите новое названия листа"/>
+                    <br/>
+                    <br/>
+                    <p:inputText value="#{viewListsBean.newlistname}"/> 
+                    <br/>
+                    <br/>
+                    <p:commandButton value="Сохранить"  actionListener="#{viewListsBean.editNameList}" icon="ui-icon-disk"  oncomplete="dlg6.hide(),p1.start()"/>
+                    <p:commandButton value="Закрыть" onclick="dlg6.hide()" icon="ui-icon-close"/>
+                </h:form>
+            </p:dialog>
+            <p:dialog header="Список напоминаний" widgetVar="dlg7" resizable="false" dynamic="true" appendTo="@(body)">
+                <h:form id="f12">
+                    <p:contextMenu for="noti">
+                        <p:menuitem value="Удалить" icon="ui-icon-trash" actionListener="#{notificationBean.delNotification}" oncomplete="p9.start()" />
+                    </p:contextMenu>
+                    <p:dataTable id="noti" emptyMessage="Нет напоминаний"  value="#{notificationBean.table}" var="item" rows="10" paginatorTemplate="{CurrentPageReport} {PreviousPageLink} {NextPageLink}"
+                                 rowsPerPageTemplate="10,20,30" paginator="true" rowKey="#{item.id}" paginatorPosition="bottom"  selection="#{notificationBean.selectedRow}" selectionMode="single">                                        
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="Дата и время"/>
+                            </f:facet>
+                            <h:outputText value="#{item.dat}">
+                                <f:convertDateTime pattern="MM/dd/yyyy HH:mm:ss"  timeZone="Europe/Kiev"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header" >
+                                <h:outputText value="Описание"/>
+                            </f:facet>
+                            <h:outputText value="#{item.description}"/>
+                        </p:column>
+                    </p:dataTable>
+                </h:form> 
+            </p:dialog>
+            <p:dialog header="Добавить напоминание" widgetVar="dlg8" resizable="false" dynamic="true" appendTo="@(body)" width="400">
+               <h:form id="f11">
+                        <h:outputText  value="Введите текст для напоминания(5 - 200): "/><br/>
+                        <p:inputTextarea  value="#{remainderBean.description}" validatorMessage="Длина(символов): мин-5, макс-200!" maxlength="200" style=" width: 360px; height: 100px;"   /> <br/><br/>
+                        <p:outputLabel for="datetime" value="Дата и время" /><br/>
+                        <p:calendar id="datetime" value="#{remainderBean.date1}" pattern="MM/dd/yyyy HH:mm:ss"  locale="ru" validatorMessage="Только время, которое еще не наступило!"  required="true" requiredMessage="Выберите дату и время!" />                        
+                        <p:commandButton value="Добавить" actionListener="#{remainderBean.run}"  style=" right: -13%;" />
+                    </h:form>
+            </p:dialog>
+        </h:body>
+    </f:view>
+</html>
+
