@@ -34,6 +34,9 @@ public class ButtonCall implements Serializable {
     @ManagedProperty(value = "#{remainderBean}")
     private RemainderBean remainderBeanChannel;
     
+    @ManagedProperty(value = "#{agentsTableBean}")
+    private AgentsTableBean agent;
+    
     public String getNumber() {
         return number;
     }
@@ -42,7 +45,7 @@ public class ButtonCall implements Serializable {
         this.number = number;
     }
 
-    public void buttonAction(ActionEvent actionEvent) {
+    public void buttonAction() {
          String UserId = null;
         Map sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
         Login bean = (Login) sessionMap.get("login");
@@ -54,6 +57,11 @@ public class ButtonCall implements Serializable {
         }
         CallThread ct = new CallThread(number,f,cdf,UserId, remainderBeanChannel.getChannel());
     }
+    
+    public void bCall(){
+        number = getAgent().getSelectedRow().getPhone();
+        buttonAction();
+    }
 
     public RemainderBean getRemainderBeanChannel() {
         return remainderBeanChannel;
@@ -61,6 +69,14 @@ public class ButtonCall implements Serializable {
 
     public void setRemainderBeanChannel(RemainderBean remainderBeanChannel) {
         this.remainderBeanChannel = remainderBeanChannel;
+    }
+
+    public AgentsTableBean getAgent() {
+        return agent;
+    }
+
+    public void setAgent(AgentsTableBean agent) {
+        this.agent = agent;
     }
 
 }

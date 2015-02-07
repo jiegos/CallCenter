@@ -41,8 +41,11 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "ContactDetails.findByAdress", query = "SELECT c FROM ContactDetails c WHERE c.adress = :adress"),
     @NamedQuery(name = "ContactDetails.findByPhone", query = "SELECT c FROM ContactDetails c WHERE c.phone = :phone"),
     @NamedQuery(name = "ContactDetails.findByKontragentId", query = "SELECT c FROM ContactDetails c WHERE c.kontragId = :kontragId"),
-    @NamedQuery(name = "ContactDetails.findByEmail", query = "SELECT c FROM ContactDetails c WHERE c.email = :email")})
+    @NamedQuery(name = "ContactDetails.findByEmail", query = "SELECT c FROM ContactDetails c WHERE c.email = :email"),
+    @NamedQuery(name = "ContactDetails.findPhones", query = "SELECT c.phone FROM ContactDetails c WHERE c.kontragId = :kontragId")})
 public class ContactDetails implements Serializable {
+    @OneToMany(mappedBy = "contact")
+    private Collection<Notification> notificationCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "contactId")
     private Collection<CompaignsDetails> compaignsDetailsCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "contactId")
@@ -175,6 +178,15 @@ public class ContactDetails implements Serializable {
 
     public void setCallLogCollection(Collection<CallLog> callLogCollection) {
         this.callLogCollection = callLogCollection;
+    }
+
+    @XmlTransient
+    public Collection<Notification> getNotificationCollection() {
+        return notificationCollection;
+    }
+
+    public void setNotificationCollection(Collection<Notification> notificationCollection) {
+        this.notificationCollection = notificationCollection;
     }
     
 }

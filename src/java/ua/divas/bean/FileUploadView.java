@@ -16,6 +16,7 @@ import java.util.UUID;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
+import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import org.primefaces.context.RequestContext;
@@ -49,14 +50,16 @@ public class FileUploadView implements Serializable {
     @EJB
     private ContactDetailsFacade cdf;
     ContactDetails details;
-
+    
+    @ManagedProperty("#{agentsTableBean}")
+    private AgentsTableBean agentBean;
     
     public void handleFileUpload(FileUploadEvent event) {
 
         FacesMessage message = new FacesMessage("Удачно", event.getFile().getFileName() + " файл успешно загружен.");
         FacesContext.getCurrentInstance().addMessage(null, message);
-        RequestContext.getCurrentInstance().execute("p2.start()");        
-        RequestContext.getCurrentInstance().execute("p5.start()");
+        
+        
 
         try {
             TransferFile(event.getFile().getFileName(), event.getFile().getInputstream());
@@ -150,6 +153,11 @@ public class FileUploadView implements Serializable {
         }
 
         System.out.println("Done");
+        
+        getAgentBean().findAll();
+        getAgentBean().getInfoBean().construct();        
+        RequestContext.getCurrentInstance().update("infoForm");
+        RequestContext.getCurrentInstance().update("agentsForm");
     }
 
     public void TransferFile(String fileName, InputStream in) {
@@ -172,5 +180,13 @@ public class FileUploadView implements Serializable {
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    public AgentsTableBean getAgentBean() {
+        return agentBean;
+    }
+
+    public void setAgentBean(AgentsTableBean agentBean) {
+        this.agentBean = agentBean;
     }
 }

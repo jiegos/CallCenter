@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
@@ -30,8 +31,6 @@ public class OperatorInfoBean implements Serializable {
     @EJB
     private CdrFacade f;
     Cdr cdr = new Cdr();
-    @ManagedProperty("#{agentsTableBean}")
-    private AgentsTableBean agents;
     private int calls;
     private List<Cdr> info;
     private String times;
@@ -42,7 +41,13 @@ public class OperatorInfoBean implements Serializable {
     private List<Cdr> list;
     private int count=0;
     private int count2=0;
-
+    
+    @PostConstruct
+    public void construct(){
+        callInfo();
+        calltimeInfo();
+    }
+    
     public void callInfo(){
         String UserId = null;
         int tempcount = 0;
@@ -60,25 +65,7 @@ public class OperatorInfoBean implements Serializable {
         count=tempcount;
         
     }
-    public void agentInfo(){
-        String UserId = null;
-        int tempcount2 = 0;
-        Map sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
-        Login bean = (Login) sessionMap.get("login");
-        if (bean != null) {
-            String userlogin = bean.getUsr();
-            for (Users u : uf.findByLogin(userlogin)) {
-                UserId= u.getId();
-            }
-        }
-        list=f.findByUserId(UserId);
-        for(Cdr k: list){
-            if(k.getKontragentId().equals(agents.getSelectedRow().getKontragId())){
-                tempcount2++;
-            }
-        }
-        count2=tempcount2;
-    }
+
     public void calltimeInfo(){
         String UserId = null;
         Map sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
@@ -217,7 +204,4 @@ public class OperatorInfoBean implements Serializable {
         this.count2 = count2;
     }
 
-    public void setAgents(AgentsTableBean agents) {
-        this.agents = agents;
-    }
 }

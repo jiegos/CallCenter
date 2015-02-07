@@ -32,5 +32,10 @@ public class NotificationFacade extends AbstractFacade<Notification> {
     
     public List< Notification> findByUserId(String userId){
         return em.createNamedQuery("Notification.findByUserId").setParameter("userId", userId).getResultList();       
+}
+    
+    public List<Notification> findByTrgName(String trgName){
+        return em.createNamedQuery("Notification.findByTrgName").setParameter("trgName", trgName).getResultList();       
     }
+    
 }

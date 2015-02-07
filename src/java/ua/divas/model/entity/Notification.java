@@ -11,7 +11,10 @@ import java.util.Date;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
@@ -34,7 +37,11 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Notification.findByVersion", query = "SELECT n FROM Notification n WHERE n.version = :version"),
     @NamedQuery(name = "Notification.findByDat", query = "SELECT n FROM Notification n WHERE n.dat = :dat"),
     @NamedQuery(name = "Notification.findByDescription", query = "SELECT n FROM Notification n WHERE n.description = :description"),
-    @NamedQuery(name = "Notification.findByUserId", query = "SELECT n FROM Notification n WHERE n.userId = :userId")})
+    @NamedQuery(name = "Notification.findByUserId", query = "SELECT n FROM Notification n WHERE n.userId = :userId"),
+    @NamedQuery(name = "Notification.findByServer", query = "SELECT n FROM Notification n WHERE n.server = :server"),
+    @NamedQuery(name = "Notification.findByClient", query = "SELECT n FROM Notification n WHERE n.client = :client"),
+    @NamedQuery(name = "Notification.findByTrgName", query = "SELECT n FROM Notification n WHERE n.trgName = :trgName"),
+    @NamedQuery(name = "Notification.findByUserLogin", query = "SELECT n FROM Notification n WHERE n.userLogin = :userLogin")})
 public class Notification implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -63,6 +70,19 @@ public class Notification implements Serializable {
     @Size(min = 1, max = 50)
     @Column(name = "USER_ID")
     private String userId;
+    @Column(name = "SERVER")
+    private Short server;
+    @Column(name = "CLIENT")
+    private Short client;
+    @Size(max = 50)
+    @Column(name = "TRG_NAME")
+    private String trgName;
+    @Size(max = 50)
+    @Column(name = "USER_LOGIN")
+    private String userLogin;
+    @JoinColumn(name = "CONTACT", referencedColumnName = "ID")
+    @ManyToOne(fetch = FetchType.EAGER)
+    private ContactDetails contact;
 
     public Notification() {
     }
@@ -117,6 +137,46 @@ public class Notification implements Serializable {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public Short getServer() {
+        return server;
+    }
+
+    public void setServer(Short server) {
+        this.server = server;
+    }
+
+    public Short getClient() {
+        return client;
+    }
+
+    public void setClient(Short client) {
+        this.client = client;
+    }
+
+    public String getTrgName() {
+        return trgName;
+    }
+
+    public void setTrgName(String trgName) {
+        this.trgName = trgName;
+    }
+
+    public String getUserLogin() {
+        return userLogin;
+    }
+
+    public void setUserLogin(String userLogin) {
+        this.userLogin = userLogin;
+    }
+
+    public ContactDetails getContact() {
+        return contact;
+    }
+
+    public void setContact(ContactDetails contact) {
+        this.contact = contact;
     }
 
     @Override

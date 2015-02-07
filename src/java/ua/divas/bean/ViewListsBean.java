@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
@@ -68,14 +69,19 @@ public class ViewListsBean implements Serializable {
     Cdr cdr = new Cdr();
     @ManagedProperty(value = "#{remainderBean}")
     private RemainderBean remainderBeanChannel;
-    @ManagedProperty("#{agentsTableBean}")
-    private AgentsTableBean agents;
+    
+    @ManagedProperty(value = "#{operatorInfoBean}")
+    private OperatorInfoBean infoBean;
+
+    private String userlogin;
+
     private List<CallLists> table;
     private List<CallLists> viewtable;
     private ArrayList<String> viewlists;
     private ArrayList<String> table2;
     private List<CallLists> selectedLists;
-    private List<Kontragents> selectedLists2;
+    private List<Kontragents> selectedLists2;    
+    private ArrayList<ContactDetails> selectedLists1;
     private ArrayList<ContactDetails> selectedLists3;
     private ArrayList<ContactDetails> selectedLists4;
     private String header;
@@ -101,28 +107,30 @@ public class ViewListsBean implements Serializable {
     private String buttontitle;
     private String newlistname;
 //Поиск созданых листов оператора и отображение
-//@PostConstruct  
+
+    @PostConstruct
+    public void construct() {
+        Map sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
+        Login bean = (Login) sessionMap.get("login");
+        if (bean != null) {
+            userlogin = bean.getUsr();
+        }
+    }
 
     public void findLists() {
         System.out.println("-----------Поиск всех листов------------ ");
         table = new ArrayList<>();
-        Map sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
-        Login bean = (Login) sessionMap.get("login");
-        if (bean != null) {
-            String userlogin = bean.getUsr();
-            for (Users u : uf.findByLogin(userlogin)) {
-                table = clf.findByUsersId(u.getId());
-            }
+
+        for (Users u : uf.findByLogin(userlogin)) {
+            table = clf.findByUsersId(u.getId());
         }
 
-        setViewtable(getTable());
+        viewtable = table;
         if (getTable().isEmpty()) {
             System.out.println("-----------Листы не найдены-----------");
             System.out.println("");
         } else {
             System.out.println("-------------Листы найдены----------");
-//            System.out.println(getTable());
-            System.out.println("-----------------------------------");
             System.out.println("");
         }
         viewlists = new ArrayList<>();
@@ -138,19 +146,16 @@ public class ViewListsBean implements Serializable {
 //Оброботка события выбора строки
     public void onRowSelect(SelectEvent event) {
         System.out.println("Выбрано строку - " + event.getObject().toString());
-        Map sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
-        Login bean = (Login) sessionMap.get("login");
-        if (bean != null) {
-            String userlogin = bean.getUsr();
-            for (Users u : uf.findByLogin(userlogin)) {
-                selectedLists = clf.findByUsersIdAndListName(u.getId(), event.getObject().toString());
 
-            }
+        for (Users u : uf.findByLogin(userlogin)) {
+            selectedLists = clf.findByUsersIdAndListName(u.getId(), event.getObject().toString());
         }
 
         selectedLists2 = new ArrayList<>();
         for (CallLists cl : selectedLists) {
-            selectedLists2.add(cl.getKontragentsId());
+            if (!selectedLists2.contains(cl.getKontragentsId())) {
+                selectedLists2.add(cl.getKontragentsId());
+            }
         }
         selectedLists3 = new ArrayList<>();
         for (Kontragents k : selectedLists2) {
@@ -158,11 +163,26 @@ public class ViewListsBean implements Serializable {
                 selectedLists3.add(cd);
             }
         }
+        
+        selectedLists1 = new ArrayList<>();
+        ArrayList<Kontragents> tmp = new ArrayList<>();
+        for (ContactDetails cd : selectedLists3) {
+            if (cd.getKontragId().getUserId().getLogin().equals(getUserlogin())) {
+                if (!tmp.contains(cd.getKontragId())) {
+                    selectedLists1.add(cd);
+                    tmp.add(cd.getKontragId());
+                }
+            }
+        }
         header = event.getObject().toString();
         render = false;
         render2 = true;
         render3 = false;
         render4 = true;
+
+        RequestContext.getCurrentInstance().update("selectListForm");
+        RequestContext.getCurrentInstance().update("agentsForm");
+        RequestContext.getCurrentInstance().update("checkAgentsForm");
     }
 
 //Обзвон выбраного списка
@@ -170,32 +190,28 @@ public class ViewListsBean implements Serializable {
         list = new ArrayList<>();
         String UserId = null;
 
-        Map sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
-        Login bean = (Login) sessionMap.get("login");
-        if (bean != null) {
-            String userlogin = bean.getUsr();
-            for (Users u : uf.findByLogin(userlogin)) {
-                UserId = u.getId();
-            }
+        for (Users u : uf.findByLogin(userlogin)) {
+            UserId = u.getId();
         }
-        for (ContactDetails cd : selectedLists3) {
+
+        for (ContactDetails cd : selectedLists1) {
             list.add(cd.getPhone());
         }
-        leftcall = "" + selectedLists3.size();
+        leftcall = "" + selectedLists1.size();
         pollstop = false;
-        clt = new CallListThread(f, UserId, list, selectedLists3, remainderBeanChannel.getChannel());
-        allcall = "" + selectedLists3.size();
+        clt = new CallListThread(f, UserId, list, selectedLists1, remainderBeanChannel.getChannel());
+        allcall = "" + selectedLists1.size();
         countcall = 0;
-        fullname = (selectedLists3.get(countcall).getKontragId().getFullname());
-        if (selectedLists3.size() > 1) {
-            fullname2 = (selectedLists3.get(countcall + 1).getKontragId().getFullname());
+        fullname = (selectedLists1.get(countcall).getKontragId().getFullname());
+        if (selectedLists1.size() > 1) {
+            fullname2 = (selectedLists1.get(countcall + 1).getKontragId().getFullname());
         } else {
             fullname2 = "Звонить больше некому";
         }
         buttontitle = "Продолжить";
         continuecall = true;
-        RequestContext.getCurrentInstance().update("f9");
-        RequestContext.getCurrentInstance().update("f10");
+        RequestContext.getCurrentInstance().update("callForm");
+        RequestContext.getCurrentInstance().update("resultCallForm");
         RequestContext.getCurrentInstance().execute("dlg5.show()");
     }
 //Проверка завершен ли звонок
@@ -204,13 +220,13 @@ public class ViewListsBean implements Serializable {
         if (!clt.getPollstop() && !clt.getError()) {
             System.out.println("Идет звонок!");
         } else {
-            RequestContext.getCurrentInstance().execute("p5.start()");
-            RequestContext.getCurrentInstance().execute("p6.start()");
-            RequestContext.getCurrentInstance().update("f10:cb10");
-            RequestContext.getCurrentInstance().update("f10:cb11");
+            infoBean.construct();        
+            RequestContext.getCurrentInstance().update("infoForm");
+            RequestContext.getCurrentInstance().update("resultCallForm:cb10");
+            RequestContext.getCurrentInstance().update("resultCallForm:cb11");
             System.out.println("Звонок прекращен");
             countcall++;
-            if ((countcall) < (selectedLists3.size())) {
+            if ((countcall) < (selectedLists1.size())) {
                 list2 = clt.getList2();
                 selectedLists4 = clt.getSelectedLists4();
                 leftcall = "" + selectedLists4.size();
@@ -231,13 +247,15 @@ public class ViewListsBean implements Serializable {
     public void testButton() {
         FacesMessage message = new FacesMessage("При наборе номера произошла ошибка!");
         FacesContext.getCurrentInstance().addMessage(null, message);
-        RequestContext.getCurrentInstance().execute("p5.start()");
-        RequestContext.getCurrentInstance().execute("p6.start()");
-        RequestContext.getCurrentInstance().update("f10:cb10");
-        RequestContext.getCurrentInstance().update("f10:cb11");
+        
+        infoBean.construct();        
+        RequestContext.getCurrentInstance().update("infoForm");
+        
+        RequestContext.getCurrentInstance().update("resultCallForm:cb10");
+        RequestContext.getCurrentInstance().update("resultCallForm:cb11");
         System.out.println("Звонок прекращен");
         countcall++;
-        if ((countcall) < (selectedLists3.size())) {
+        if ((countcall) < (selectedLists1.size())) {
             list2 = clt.getList2();
             selectedLists4 = clt.getSelectedLists4();
             leftcall = "" + selectedLists4.size();
@@ -277,14 +295,10 @@ public class ViewListsBean implements Serializable {
 
         String UserId = null;
 
-        Map sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
-        Login bean = (Login) sessionMap.get("login");
-        if (bean != null) {
-            String userlogin = bean.getUsr();
             for (Users u : uf.findByLogin(userlogin)) {
                 UserId = u.getId();
             }
-        }
+      
 
 //Заполнение CallLog---------START--------
         for (CallResults r : resf.findAll()) {
@@ -294,11 +308,10 @@ public class ViewListsBean implements Serializable {
         }
         for (CallStatus s : csf.findAll()) {
             if (!clt.getError() && clt.cdr.getCallStatus() != null) {
-                
+
                 if (s.getName().compareTo(clt.cdr.getCallStatus()) == 0) {
                     log.setCallStatus(s);
                 }
-                
 
             } else {
                 log.setCallStatus(csf.findAll().get(1));
@@ -308,7 +321,7 @@ public class ViewListsBean implements Serializable {
             }
         }
         log.setCompDetId(null);
-        log.setContactId(selectedLists3.get(countcall - 1));
+        log.setContactId(selectedLists1.get(countcall - 1));
         log.setDat(new Date());
         log.setMemo(comment);
         log.setId(UUID.randomUUID().toString());
@@ -324,54 +337,37 @@ public class ViewListsBean implements Serializable {
             continuecall = true;
         }
 
-        if ((selectedLists3.size() - countcall) > 1) {
-            fullname = (selectedLists3.get(countcall).getKontragId().getFullname());
-            fullname2 = (selectedLists3.get(countcall + 1).getKontragId().getFullname());
+        if ((selectedLists1.size() - countcall) > 1) {
+            fullname = (selectedLists1.get(countcall).getKontragId().getFullname());
+            fullname2 = (selectedLists1.get(countcall + 1).getKontragId().getFullname());
         }
-        if ((selectedLists3.size() - countcall) == 1) {
-            fullname = (selectedLists3.get(countcall).getKontragId().getFullname());
+        if ((selectedLists1.size() - countcall) == 1) {
+            fullname = (selectedLists1.get(countcall).getKontragId().getFullname());
             fullname2 = "Звонить больше некому";
         }
-        if ((selectedLists3.size() - countcall) == 0) {
+        if ((selectedLists1.size() - countcall) == 0) {
             countcall = 0;
             RequestContext.getCurrentInstance().execute("dlg5.hide()");
             pollstop = true;
         } else {
             pollstop = false;
         }
-        RequestContext.getCurrentInstance().update("f9");
-        RequestContext.getCurrentInstance().update("f10");
+        RequestContext.getCurrentInstance().update("callForm");
+        RequestContext.getCurrentInstance().update("resultCallForm");
         comment = null;
         statuscall = null;
         list2 = null;
         selectedLists4 = null;
     }
 
-    public void refreshAll() {
-        render = false;
-        render2 = false;
-        render3 = true;
-        render4 = false;
-        render5 = false;
-        setTablename("Таблица клиентов");
-    }
-//Меню - Список клиентов - Кнопка "Показать всех"
-
-    public void showAllAgent() {
-        render = false;
-        render2 = false;
-        render3 = true;
-        render4 = false;
-        render5 = false;
-        agents.setSelectedRow(null);
-
-        setTablename("Таблица клиентов");
-    }
+//Меню - Листы обзвона - Кнопка "Показать все"
 
     public void showAllLists() {
+        findLists();
         render4 = true;
         render5 = false;
-        agents.setSelectedRow(null);
+        RequestContext.getCurrentInstance().update("callListsForm");
+        RequestContext.getCurrentInstance().update("fileForm");
     }
 //Меню - Листы обзвона - Кнопка "Создать"
 
@@ -381,31 +377,34 @@ public class ViewListsBean implements Serializable {
         render3 = false;
         render4 = false;
         render5 = false;
-        agents.setSelectedRow(null);
-        setTablename("Создание листа обзвона");
+        tablename = "Создание листа обзвона";
+
+        RequestContext.getCurrentInstance().update("selectListForm");
+        RequestContext.getCurrentInstance().update("agentsForm");
+        RequestContext.getCurrentInstance().update("checkAgentsForm");
+        RequestContext.getCurrentInstance().update("fileForm");
+        RequestContext.getCurrentInstance().update("callListsForm");
     }
 //Меню - Листы обзвона - Кнопка "Загрузить"
 
     public void showUpload() {
         render4 = false;
         render5 = true;
+        RequestContext.getCurrentInstance().update("fileForm");
+        RequestContext.getCurrentInstance().update("callListsForm");
     }
 
 //Удалить лист
     public void deleteList(ActionEvent actionEvent) {
         System.out.println("---------------------Удаление листа " + header);
-        Map sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
-        Login bean = (Login) sessionMap.get("login");
-        if (bean != null) {
-            String userlogin = bean.getUsr();
-            System.out.println(userlogin);
-            for (CallLists l : selectedLists) {
-                if (l.getListName().equals(header)) {
-                    for (Users u : uf.findByLogin(userlogin)) {
-                        if (l.getUsersId().equals(u.getId())) {
-                            clf.remove(l);
-                            System.out.println("--------------Успешно--------------");
-                        }
+
+        System.out.println(getUserlogin());
+        for (CallLists l : selectedLists) {
+            if (l.getListName().equals(header)) {
+                for (Users u : uf.findByLogin(userlogin)) {
+                    if (l.getUsersId().equals(u.getId())) {
+                        clf.remove(l);
+                        System.out.println("--------------Успешно--------------");
                     }
                 }
             }
@@ -415,6 +414,12 @@ public class ViewListsBean implements Serializable {
         render2 = false;
         render3 = false;
         render4 = true;
+        findLists();
+        tablename = "Создание листа обзвона";
+        RequestContext.getCurrentInstance().update("checkAgentsForm");
+        RequestContext.getCurrentInstance().update("selectListForm");
+        RequestContext.getCurrentInstance().update("agentsForm");
+        RequestContext.getCurrentInstance().update("callListsForm");
     }
 //Изменить название листа
 
@@ -438,10 +443,16 @@ public class ViewListsBean implements Serializable {
             }
         }
 
-        render = true;
-        render2 = false;
+        render = false;
+        render2 = true;
         render3 = false;
         render4 = true;
+        header = newlistname;
+        findLists();
+        RequestContext.getCurrentInstance().update("checkAgentsForm");
+        RequestContext.getCurrentInstance().update("selectListForm");
+        RequestContext.getCurrentInstance().update("agentsForm");
+        RequestContext.getCurrentInstance().update("callListsForm");
     }
 
     public CallLists getSelectedList() {
@@ -556,10 +567,9 @@ public class ViewListsBean implements Serializable {
         this.selectedLists3 = selectedLists3;
     }
 
-    public void setAgents(AgentsTableBean agents) {
-        this.agents = agents;
-    }
-
+//    public void setAgents(AgentsTableBean agents) {
+//        this.agents = agents;
+//    }
     public Boolean getRender5() {
         return render5;
     }
@@ -662,6 +672,30 @@ public class ViewListsBean implements Serializable {
 
     public void setRemainderBeanChannel(RemainderBean remainderBeanChannel) {
         this.remainderBeanChannel = remainderBeanChannel;
+    }
+
+    public String getUserlogin() {
+        return userlogin;
+    }
+
+    public void setUserlogin(String userlogin) {
+        this.userlogin = userlogin;
+    }
+
+    public ArrayList<ContactDetails> getSelectedLists1() {
+        return selectedLists1;
+    }
+
+    public void setSelectedLists1(ArrayList<ContactDetails> selectedLists1) {
+        this.selectedLists1 = selectedLists1;
+    }
+
+    public OperatorInfoBean getInfoBean() {
+        return infoBean;
+    }
+
+    public void setInfoBean(OperatorInfoBean infoBean) {
+        this.infoBean = infoBean;
     }
 
 }

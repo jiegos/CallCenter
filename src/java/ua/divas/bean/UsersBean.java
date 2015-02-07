@@ -7,44 +7,47 @@ import javax.annotation.PostConstruct;
 import javax.faces.bean.ApplicationScoped;
 import javax.faces.bean.ManagedBean;
 
-
 @ManagedBean
 @ApplicationScoped
 public class UsersBean implements Serializable {
 
     public UsersBean() {
     }
-    private List<String> users;
+    private static List<String> users; 
     
     @PostConstruct
-    public void contruct(){
+    public void contruct() {
         users = new ArrayList<>();
     }
-    
-    public void addUser(String user){
+
+    public void addUser(String user) {
         System.out.println("Онлайн - " + user);
         users.add(user);
+       
     }
-    
-    public void delUser(String user){        
+
+    public void delUser(String user) {
         System.out.println("Оффлайн - " + user);
         users.remove(user);
+       
     }
-    
-    public List<String> showUsers(){
+
+    public List<String> showUsers() {
         return users;
     }
-    public int countUsers(){
+
+    public int countUsers() {
         System.out.println(users.size());
-        for(String s:users){
+        for (String s : users) {
             System.out.println(s);
-        }  
+        }
         return users.size();
     }
-    public  Boolean findUsers(String user){
-        for(String s:users){
-            return s.compareTo(user)==0;
-        }        
+
+    public static Boolean findUsers(String user) {
+        for (String s : users) {
+            return s.compareTo(user) == 0;
+        }
         return null;
     }
 }

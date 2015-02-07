@@ -2,6 +2,8 @@ package ua.divas.bean;
 
 import java.io.IOException;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.faces.bean.ManagedBean;
 import javax.servlet.GenericServlet;
 import javax.servlet.ServletConfig;
@@ -26,7 +28,7 @@ public class StartSchedulerQuartz extends GenericServlet {
 
         prop.setProperty("org.quartz.scheduler.instanceName", "REMAINDER_SCHEDULER");
         prop.setProperty("org.quartz.threadPool.class", "org.quartz.simpl.SimpleThreadPool");
-        prop.setProperty("org.quartz.threadPool.threadCount", "50");
+        prop.setProperty("org.quartz.threadPool.threadCount", "10");
 
         prop.setProperty("org.quartz.threadPool.threadsInheritContextClassLoaderOfInitializingThread", "true");
 
@@ -45,11 +47,21 @@ public class StartSchedulerQuartz extends GenericServlet {
             SchedulerFactory sf = new StdSchedulerFactory(prop);            
             sched = sf.getScheduler();
             sched.start();
-            System.out.println("Шедулер стартовал из сервлета");
+            System.out.println("Шедулер стартовал");
             
         } catch (SchedulerException e) {
             System.out.println("Ошибка " + e);
         }
+    }
+    public void destroy(){
+       
+        try {
+            sched.shutdown();
+            System.out.println("Шедулер остановлен");
+        } catch (SchedulerException ex) {
+            Logger.getLogger(StartSchedulerQuartz.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
     }
  
     @Override

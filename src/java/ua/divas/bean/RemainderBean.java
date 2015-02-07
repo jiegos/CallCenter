@@ -18,6 +18,7 @@ import org.primefaces.context.RequestContext;
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.JobBuilder.newJob;
+import static org.quartz.JobBuilder.newJob;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.Trigger;
@@ -25,6 +26,7 @@ import static org.quartz.TriggerBuilder.newTrigger;
 import ua.divas.model.CallListsFacade;
 import ua.divas.model.NotificationFacade;
 import ua.divas.model.UsersFacade;
+import ua.divas.model.entity.ContactDetails;
 import ua.divas.model.entity.Notification;
 import ua.divas.model.entity.Users;
 
@@ -42,80 +44,88 @@ public class RemainderBean implements Serializable {
     private String cutid;
     private String userlogin;
     private String userId;
+    private ContactDetails contact = null;
     
     @ManagedProperty(value = "#{usersBean}")
     private UsersBean userbean;
     
+    @ManagedProperty("#{notificationBean}")
+    private NotificationBean notiBean;  
+       
     @EJB
     private UsersFacade uf;
     
     @EJB
     private NotificationFacade nf;
-    Notification not = new Notification();
+    Notification not;
     
-    
-    @EJB
-    private CallListsFacade clf;
      
     @PostConstruct
     public void doPostConstruction() {
         Map sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
-        Login bean = (Login) sessionMap.get("login");
-        
+        Login bean = (Login) sessionMap.get("login");        
         if (bean != null) {
             userlogin = bean.getUsr();
             for (Users u : uf.findByLogin(userlogin)) {
                userId = u.getId();
             }
-        }
-        
+        }        
         channel ="/" + userlogin;
-        System.out.println(channel);
-       // channel = "/" + UUID.randomUUID().toString();        
-        //channels.addChannel(userlogin, channel);  
-       
+        System.out.println("Канал для Push - " + channel);       
     }
     
-    public void creatNotification(){
+    public void creatNotification(String cutid){
+        not = new Notification();
         not.setDat(date1);
         not.setDescription(description);
         String id = UUID.randomUUID().toString();
         not.setId(id);
         not.setUserId(userId);
+        not.setUserLogin(userlogin);
+        not.setContact(contact);
+        not.setTrgName("trigger"+cutid);
+        not.setServer((short)0);
+        not.setClient((short)0);
         long time = System.currentTimeMillis();
         java.sql.Date data = new java.sql.Date(time);
         not.setVersion(new Timestamp(data.getTime()));
         nf.create(not);
+        
         FacesMessage message = new FacesMessage("Напоминание добавлено!");
         FacesContext.getCurrentInstance().addMessage(null, message);
+        notiBean.findNotificationByUser();                      
+        RequestContext.getCurrentInstance().update("listNotiForm");
+        contact=null;
     }
-    public void clearDescription(){
-        description = null;
-        date1=null;
-        RequestContext.getCurrentInstance().update("f11");        
-        RequestContext.getCurrentInstance().execute("dlg8.show()");
+    
+    public void creatNotificationFor(ContactDetails detail){
+        System.out.println("");
+        contact = detail;
+        System.out.println(contact);
+    }
+    
+    public void creatOnlyNotification(){
+        contact = null;        
+        System.out.println(contact);
     }
     
     public void run() throws Exception {
         
-        creatNotification();
-        RequestContext.getCurrentInstance().execute("p9.start()");
-        
         cutid = UUID.randomUUID().toString().substring(0, 7);      
     
-        JobDetail job = newJob(RemainderJob.class).withIdentity("job"+cutid, "group").build();
+        JobDetail job = newJob(RemainderJob.class).withDescription("trigger"+cutid).withIdentity("job"+cutid, "group").build();
         
 //        job.getJobDataMap().put("users", userbean);
         
         Date runDate = date1;
 
-        Trigger trigger = newTrigger().startAt(runDate).withDescription("/"+userlogin).withIdentity("trigger"+cutid, "group").build();
+        Trigger trigger = newTrigger().startAt(runDate).withDescription(userlogin).withIdentity("trigger"+cutid, "group").build();
   
         System.out.println("------- Новое напоминание! ----------------");
        
         StartSchedulerQuartz.sched.scheduleJob(job, trigger);
         RequestContext.getCurrentInstance().execute("dlg8.hide()");
-        
+        creatNotification(cutid);
     }
 
     public String getDescription() {
@@ -148,6 +158,22 @@ public class RemainderBean implements Serializable {
 
     public void setUserbean(UsersBean userbean) {
         this.userbean = userbean;
+    }
+
+    public NotificationBean getNotiBean() {
+        return notiBean;
+    }
+
+    public void setNotiBean(NotificationBean notiBean) {
+        this.notiBean = notiBean;
+    }
+
+    public ContactDetails getContact() {
+        return contact;
+    }
+
+    public void setContact(ContactDetails contact) {
+        this.contact = contact;
     }
 
 
