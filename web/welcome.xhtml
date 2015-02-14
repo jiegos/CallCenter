@@ -52,13 +52,7 @@
 
 
 
-                <p:layoutUnit position="west" size="230"  style=" border-color: darkgrey;  padding-left: 3px;">                   
-                    <h:form id="singleCallForm" style="text-align:center" >
-                        <h:outputText value="Введите номер: "/><br/>
-                        <p:inputMask value="#{buttonCall.number}" mask="(999) 999-99-99" style="width:110px;"/><br/>
-                        <p:commandButton value="Позвонить" actionListener="#{buttonCall.buttonAction}" />  
-                    </h:form>
-                    <br/> 
+                <p:layoutUnit position="west" size="230"  style=" border-color: darkgrey;  padding-left: 3px;">
                     <h:form id="menuForm">
                         <p:panelMenu>                           
                             <p:submenu label="Список клиентов"  style=" font-size: 80%;">

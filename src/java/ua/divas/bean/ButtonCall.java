@@ -55,6 +55,7 @@ public class ButtonCall implements Serializable {
                 UserId= u.getId();
             }
         }
+        System.out.println(number);
         CallThread ct = new CallThread(number,f,cdf,UserId, remainderBeanChannel.getChannel());
     }
     
