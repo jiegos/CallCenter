@@ -3,13 +3,13 @@ package ua.divas.bean;
 import java.io.Serializable;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
@@ -17,10 +17,12 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import org.primefaces.context.RequestContext;
 import ua.divas.model.CallListsFacade;
+import ua.divas.model.CdrFacade;
 import ua.divas.model.ContactDetailsFacade;
 import ua.divas.model.KontragentsFacade;
 import ua.divas.model.UsersFacade;
 import ua.divas.model.entity.CallLists;
+import ua.divas.model.entity.Cdr;
 import ua.divas.model.entity.ContactDetails;
 import ua.divas.model.entity.Kontragents;
 import ua.divas.model.entity.Users;
@@ -49,9 +51,12 @@ public class AgentsTableBean implements Serializable {
     private CallListsFacade clf;
     CallLists cl;
 
+    @EJB
+    private CdrFacade f;
+
     @ManagedProperty("#{viewListsBean}")
     private ViewListsBean listBean;
-    
+
     @ManagedProperty("#{notificationBean}")
     private NotificationBean notiBean;
 
@@ -60,6 +65,8 @@ public class AgentsTableBean implements Serializable {
 
     private List<ContactDetails> table;
     private List<ContactDetails> table2;
+    private List<Cdr> table3;
+    private List<Cdr> info;
     private List<ContactDetails> selectedRows;
     private ContactDetails selectedRow;
     private String listname;
@@ -70,6 +77,13 @@ public class AgentsTableBean implements Serializable {
     private String selectedPhone;
     private List<String> phones;
     private String userlogin;
+    private String lastCalltime;
+    private String times;
+    private String answered;
+    private String noanswer;
+    private String busytime;
+    private String calltime;    
+    private int calls;
 
 //Заполнение таблицы контрагентов 
     @PostConstruct
@@ -82,7 +96,7 @@ public class AgentsTableBean implements Serializable {
         Map sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
         Login bean = (Login) sessionMap.get("login");
         if (bean != null) {
-            userlogin=bean.getUsr();
+            userlogin = bean.getUsr();
             for (ContactDetails cd : table) {
                 if (cd.getKontragId().getUserId().getLogin().equals(getUserlogin())) {
                     if (!tmp.contains(cd.getKontragId())) {
@@ -97,8 +111,9 @@ public class AgentsTableBean implements Serializable {
         System.out.println("------------Контрагенты найдены-------------");
     }
 //Меню - Список клиентов - Кнопка "Показать всех"
+
     public void showAllAgent() {
-        
+
         findAll();
         listBean.setRender(false);
         listBean.setRender2(false);
@@ -111,10 +126,11 @@ public class AgentsTableBean implements Serializable {
         RequestContext.getCurrentInstance().update("checkAgentsForm");
         RequestContext.getCurrentInstance().update("fileForm");
         RequestContext.getCurrentInstance().update("callListsForm");
-        
+
         listBean.setTablename("Таблица контрагентов");
     }
 //Сохранение выбранных номеров(строк) в базе с названием листа  
+
     public void buttonSaveList(ActionEvent actionEvent) {
         for (ContactDetails n : getSelectedRows()) {
             cl = new CallLists();
@@ -133,23 +149,21 @@ public class AgentsTableBean implements Serializable {
         }
         listBean.findLists();
         RequestContext.getCurrentInstance().update("callListsForm");
-        
+
     }
-    
-    public void creatNotification(){        
+
+    public void creatNotification() {
         listBean.getRemainderBeanChannel().creatNotificationFor(selectedRow);
     }
-    
-        
-    public void openDetails(){
-        ContactDetails detail = notiBean.getSelectedRow().getContact(); 
+
+    public void openDetails() {
+        ContactDetails detail = notiBean.getSelectedRow().getContact();
         System.out.println(detail);
         selectedRow = detail;
-                    
+
         RequestContext.getCurrentInstance().update("viewAgentForm");
-        RequestContext.getCurrentInstance().execute("dlg9.show()");            
+        RequestContext.getCurrentInstance().execute("dlg9.show()");
     }
-  
 
 //Добавление нового контрагента в базу
     public void createKontragent(ActionEvent actionEvent) {
@@ -276,9 +290,89 @@ public class AgentsTableBean implements Serializable {
 
     }
 
+    public void agentInfo() {
+        findLastTime();
+        calltimeInfo();
+    }
+    public void calltimeInfo(){
+        info = f.findByKontragentId(selectedRow.getKontragId());
+        calls = f.findByKontragentId(selectedRow.getKontragId()).size();
+        Long temp =0L;
+        int i = 0;
+        int j = 0;
+        
+        String temp_noanswered=null;
+        String temp_answered=null;
+        Long busytemp=0L;
+        Long calltemp=0L;
+        for(Cdr c : getInfo()){
+            temp+=c.getAllCallTime();
+             if(c.getCallStatus().equals("ANSWERED")){
+                temp_answered=""+(++i);
+            }else{
+                temp_noanswered=""+(++j);
+            } 
+           java.util.Date time = c.getCallStartTime();
+           java.util.Date time2 = c.getCallAnswerTime();
+           java.util.Date time3 = c.getCallEndTime();
+           busytemp+=(time2.getTime()-time.getTime());
+           calltemp+=(time3.getTime()-time2.getTime());
+            
+           
+        }
+        setAnswered(temp_answered);
+        setNoanswer(temp_noanswered);
+        setTimes(formatDate(temp));
+        setBusytime(formatDate(busytemp/1000));
+        setCalltime(formatDate(calltemp/1000));       
+       
+    }
+    public String formatDate(Long time){
+        long sec;
+        long min;
+        long hour;
+        
+        hour=time/3600;
+        min=(time-hour*3600)/60;
+        sec=time-hour*3600-min*60;
+        if(hour<10 && min<10 && sec<10){
+            return "0"+hour+":0"+min+":0"+sec;
+        }else if (hour<10 && min<10){
+            return "0"+hour+":0"+min+":"+sec;
+        }else if (hour<10 && sec<10){
+            return "0"+hour+":"+min+":0"+sec    ;
+        }else if (min<10 && sec<10){
+            return ""+hour+":0"+min+":0"+sec;
+        }else if (sec<10){
+            return ""+hour+":"+min+":0"+sec;
+        }else{
+        return hour+":"+min+":"+sec;
+        }
+    }
+    
+    public void findLastTime(){
+        table3 = f.findByKontragentId(selectedRow.getKontragId());
+
+        java.util.Date temp = new Date(0);
+
+        SimpleDateFormat dateFormat = null;
+
+        dateFormat = new SimpleDateFormat("d/MM/yy HH:mm:ss");
+
+        for (Cdr r : table3) {
+            if (r.getCallStartTime().after(temp)) {
+                temp = r.getCallStartTime();
+            }
+        }
+        if (temp.equals(new Date(0))) {
+            lastCalltime = "не было звонков";
+        } else {
+            lastCalltime = dateFormat.format(temp);
+        }
+    }
+    
     public void searchPhone() {
         phones = cdf.findPhones(selectedRow.getKontragId());
-
     }
 
     public List<ContactDetails> getSelectedRows() {
@@ -408,6 +502,70 @@ public class AgentsTableBean implements Serializable {
 
     public void setNotiBean(NotificationBean notiBean) {
         this.notiBean = notiBean;
+    }
+
+    public String getLastCalltime() {
+        return lastCalltime;
+    }
+
+    public void setLastCalltime(String lastCalltime) {
+        this.lastCalltime = lastCalltime;
+    }
+
+    public List<Cdr> getInfo() {
+        return info;
+    }
+
+    public void setInfo(List<Cdr> info) {
+        this.info = info;
+    }
+
+    public String getTimes() {
+        return times;
+    }
+
+    public void setTimes(String times) {
+        this.times = times;
+    }
+
+    public String getAnswered() {
+        return answered;
+    }
+
+    public void setAnswered(String answered) {
+        this.answered = answered;
+    }
+
+    public String getNoanswer() {
+        return noanswer;
+    }
+
+    public void setNoanswer(String noanswer) {
+        this.noanswer = noanswer;
+    }
+
+    public String getBusytime() {
+        return busytime;
+    }
+
+    public void setBusytime(String busytime) {
+        this.busytime = busytime;
+    }
+
+    public String getCalltime() {
+        return calltime;
+    }
+
+    public void setCalltime(String calltime) {
+        this.calltime = calltime;
+    }
+
+    public int getCalls() {
+        return calls;
+    }
+
+    public void setCalls(int calls) {
+        this.calls = calls;
     }
 
 }

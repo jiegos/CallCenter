@@ -4,11 +4,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import org.primefaces.context.RequestContext;
@@ -56,11 +54,7 @@ public class NotificationBean implements Serializable {
 
     public void findNotificationByUser() {        
         table = nf.findByUserId(getUserId());
-        temptable = new ArrayList<>();
-        for(Notification n : table){
-            temptable.add(n);
-        }
-        table = temptable;
+
         RequestContext.getCurrentInstance().update("listNotiForm");
     }
     
@@ -77,26 +71,22 @@ public class NotificationBean implements Serializable {
         table2 = new ArrayList<>();
         System.out.println("");
         System.out.println("Поиск пропущенных уведомлений!");
-        findNotificationByUser();
+        
        
-        for (Notification n : table) {
-            System.out.println(" - " + n);
-            System.out.println(n.getClient() + " " + n.getServer());
-            System.out.println((n.getClient()==0) + " " + (n.getServer()==1));
+        for (Notification n : nf.findByUserId(getUserId())) {
             if (n.getClient()==0 && n.getServer()==1) {                
-                table2.add(n);
-                System.out.println(" + "+n);                
+                table2.add(n);               
             }
         }
         System.out.println(table2);        
         RequestContext.getCurrentInstance().update("notiForm:cb12");
     }
 
-    public void checkNotification() {
-        not = selectedRow;
+    public void checkNotification() {        
+        not = selectedRow;        
         not.setClient((short) 1);
         nf.edit(not);
-        RequestContext.getCurrentInstance().update("listNotiForm"); 
+        RequestContext.getCurrentInstance().update("listNotiForm");
         lookNotification();
     }
 
@@ -129,6 +119,9 @@ public class NotificationBean implements Serializable {
     }
 
     public void setSelectedRow(Notification selectedRow) {
+//        String id = selectedRow.getId();             
+//        selectedRow.setClient(nf.findClientById(id));        
+//        selectedRow.setServer(nf.findServerById(id));
         this.selectedRow = selectedRow;
     }
 

@@ -8,7 +8,6 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import ua.divas.model.CdrFacade;
@@ -65,7 +64,7 @@ public class OperatorInfoBean implements Serializable {
         count=tempcount;
         
     }
-
+  
     public void calltimeInfo(){
         String UserId = null;
         Map sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();

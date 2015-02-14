@@ -4,8 +4,10 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/home/igor/NetBeansProjects/CallCenter/web/welcome.xhtml</file>
-            <file>file:/home/igor/NetBeansProjects/CallCenter/src/java/ua/divas/bean/RemainderBean.java</file>
-            <file>file:/home/igor/NetBeansProjects/CallCenter/src/java/ua/divas/bean/NotificationBean.java</file>
+            <file>file:/home/igor/NetBeansProjects/CallCenter/src/java/ua/divas/bean/CallListThread.java</file>
+            <file>file:/home/igor/NetBeansProjects/CallCenter/src/java/ua/divas/bean/AsteriskManager.java</file>
+            <file>file:/home/igor/NetBeansProjects/CallCenter/src/java/ua/divas/bean/ViewListsBean.java</file>
+            <file>file:/home/igor/NetBeansProjects/CallCenter/src/java/ua/divas/bean/AgentsTableBean.java</file>
         </group>
     </open-files>
 </project-private>

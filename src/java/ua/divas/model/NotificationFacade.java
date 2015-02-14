@@ -31,11 +31,21 @@ public class NotificationFacade extends AbstractFacade<Notification> {
     }
     
     public List< Notification> findByUserId(String userId){
+        
+        em.getEntityManagerFactory().getCache().evictAll();
         return em.createNamedQuery("Notification.findByUserId").setParameter("userId", userId).getResultList();       
 }
     
     public List<Notification> findByTrgName(String trgName){
         return em.createNamedQuery("Notification.findByTrgName").setParameter("trgName", trgName).getResultList();       
+    }
+    
+    public Short findClientById(String id){
+        return (Short) em.createNamedQuery("Notification.findClientById").setParameter("id", id).getSingleResult();       
+    }
+    
+    public Short findServerById(String id){
+        return (Short) em.createNamedQuery("Notification.findServerById").setParameter("id", id).getSingleResult();       
     }
     
 }

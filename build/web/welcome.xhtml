@@ -166,7 +166,7 @@
                                 <h:outputText value="#{item.phone}"/>
                             </p:column>
                             <f:facet name="footer">
-                                <p:commandButton id="searchButton" value="Показать"  icon="ui-icon-search" oncomplete="dlg9.show()"  update=":viewAgentForm" disabled="#{empty agentsTableBean.selectedRow}"/>
+                                <p:commandButton id="searchButton" value="Показать"  icon="ui-icon-search" oncomplete="dlg9.show()" actionListener="#{agentsTableBean.agentInfo}"  update=":viewAgentForm" disabled="#{empty agentsTableBean.selectedRow}"/>
                                 <p:commandButton id="editButton"  value="Изменить" actionListener="#{agentsTableBean.searchPhone}"  icon="ui-icon-pencil" oncomplete="dlg2.show()" onerror="dlg2.hide()"  update=":editForm" disabled="#{empty agentsTableBean.selectedRow}"/>
                                 <p:commandButton id="deleteButton" value="Удалить" icon="ui-icon-trash" oncomplete="dlg3.show()"   update=":deleteForm" disabled="#{empty   agentsTableBean.selectedRow}"/>  
                             </f:facet>
@@ -205,7 +205,7 @@
                 <p:layoutUnit position="east"  size="300"  style=" border-color: darkgrey;">                    
                     <h:form id="notiForm">
                         <p:commandButton  id="cb12" value="Список напоминаний" actionListener="#{notificationBean.findNotificationByUser}" oncomplete="dlg7.show()"   styleClass="#{!empty notificationBean.table2 ? 'red':'black'}" />
-                        <p:commandButton icon="ui-icon-plus" oncomplete="dlg8.show()" actionListener="#{remainderBean.creatOnlyNotification}" />                        
+                        <p:commandButton icon="ui-icon-plus" oncomplete="dlg8.show()" actionListener="#{remainderBean.creatOnlyNotification}" />
                         <p:poll  widgetVar="notiPoll" interval="1" onsuccess="notiPoll.stop()" listener="#{notificationBean.lookNotification}"/>
                     </h:form>
                     <p:socket  onMessage="handleMessage" channel="#{remainderBean.channel}"/> 
@@ -215,7 +215,15 @@
                             document.getElementById('hiddenForm:hbutton').click();
                         }
                     </script>
-
+                    <p:socket  onMessage="errorMessage" channel="#{remainderBean.channel}1"/> 
+                    <script type="text/javascript">
+                        function errorMessage() {
+                            errorgrowl.renderMessage({"summary":"Внимание!",
+                             "detail":"Ошибка в наборе номера",
+                             "severity":"warn"});
+                        }
+                    </script>
+                    <p:growl widgetVar="errorgrowl"/>
                     <p:growl id="growl3" showDetail="true" sticky="true" />
                     <h:form id="hiddenForm" > 
                         <h:inputHidden id="hidden" value="#{notificationBean.trgName}"/>
@@ -389,7 +397,7 @@
                 <h:form id="resultCallForm">
                     <table width="100%">
                         <tr><td><p:outputLabel value="Результаты звонка (обязательно):"/></td>
-                            <td><p:commandButton icon="ui-icon-plus" actionListener="#{agentsTableBean.creatNotification}" title="Добавить напоминание"  immediate="true" validateClient="false" /></td></tr>
+                            <td><p:commandButton icon="ui-icon-plus" actionListener="#{agentsTableBean.creatNotification}" oncomplete="dlg8.show()"  title="Добавить напоминание"  immediate="true" validateClient="false" /></td></tr>
                         <tr><td><p:selectOneMenu id="selectemenu" value="#{viewListsBean.statuscall}" required="true" requiredMessage="Выберите один из вариантов">
                                     <f:selectItem itemLabel="Выберите одно" itemValue="" />
                                     <f:selectItem itemLabel="Продажа" itemValue="Продажа" />
@@ -476,7 +484,7 @@
                     <h:outputText value="Клиент: #{agentsTableBean.selectedRow.kontragId.fullname}" /> 
                     <p:commandButton  value="Позвонить" actionListener="#{buttonCall.bCall}"  style=" float: right; "/>
                     <br/><br/>
-                    <h:outputText value="Последний звонок: " />                    
+                    <h:outputText value="Последний звонок: #{agentsTableBean.lastCalltime}" />                    
                     <p:commandButton icon="ui-icon-plus" oncomplete="dlg8.show()" actionListener="#{agentsTableBean.creatNotification}" title="Добавить напоминание"  style=" float: right; "/>  
                     <br/>
                     <br/>
@@ -485,17 +493,17 @@
                             <h:panelGrid columns="2" cellpadding="5">
                                 <h:outputText value="Телефон: " /><h:outputText value="#{agentsTableBean.selectedRow.phone}"/>                                
                                 <h:outputText value="Адрес: " /><h:outputText value="#{agentsTableBean.selectedRow.adress}"/>                                
-                                <h:outputText value="Почта : "/><h:outputText value="#{agentsTableBean.selectedRow.email}"/>
+                                <h:outputText value="Почта: "/><h:outputText value="#{agentsTableBean.selectedRow.email}"/>
                             </h:panelGrid>
                         </p:tab>
                         <p:tab title="Статистика">
                             <h:panelGrid columns="2" cellpadding="5">
-                                <h:outputText value="Количество звонков: " /><h:outputText value="#{operatorInfoBean.count2}"/>                                
-                                <h:outputText value="С ответом: " /><h:outputText value="#{operatorInfoBean.count2}"/>
-                                <h:outputText value="Без ответа: " /><h:outputText value="#{operatorInfoBean.count2}"/>
-                                <h:outputText value="Продолжительность звонков: "/><h:outputText value="#{operatorInfoBean.count2}"/>
-                                <h:outputText value="Время ожидания: "/><h:outputText value="#{operatorInfoBean.count2}"/>
-                                <h:outputText value="Время разговора: "/><h:outputText value="#{operatorInfoBean.count2}"/>
+                                <h:outputText value="Количество звонков: " /><h:outputText value="#{agentsTableBean.calls}"/>                                
+                                <h:outputText value="С ответом: " /><h:outputText value="#{agentsTableBean.answered}"/>
+                                <h:outputText value="Без ответа: " /><h:outputText value="#{agentsTableBean.noanswer}"/>
+                                <h:outputText value="Продолжительность звонков: "/><h:outputText value="#{agentsTableBean.times}"/>
+                                <h:outputText value="Время ожидания: "/><h:outputText value="#{agentsTableBean.busytime}"/>
+                                <h:outputText value="Время разговора: "/><h:outputText value="#{agentsTableBean.calltime}"/>
                             </h:panelGrid>
                         </p:tab>
                     </p:tabView>

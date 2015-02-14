@@ -2,11 +2,6 @@ package ua.divas.bean;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.UUID;
-import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.RequestScoped;
 import org.asteriskjava.manager.AbstractManagerEventListener;
 import org.asteriskjava.manager.AuthenticationFailedException;
 import org.asteriskjava.manager.ManagerConnection;
@@ -18,8 +13,6 @@ import org.asteriskjava.manager.response.ManagerResponse;
 import org.primefaces.push.PushContext;
 import org.primefaces.push.PushContextFactory;
 
-@RequestScoped
-@ManagedBean
 public class AsteriskManager extends AbstractManagerEventListener {
 
     public AsteriskManager() {
@@ -69,6 +62,7 @@ public class AsteriskManager extends AbstractManagerEventListener {
                 if(!originateResponse.getResponse().isEmpty()){status = originateResponse.getResponse();}
                 System.out.println(originateResponse.getResponse());
                 if (originateResponse.getResponse().equals("Success")) {
+//Цикл ожидания разговора, пока не будет результата звонка (из CDR) и phone не перестанет быть равным null
                     if (phone == null) {
                         while (true) {
                             try {
@@ -83,13 +77,10 @@ public class AsteriskManager extends AbstractManagerEventListener {
                         }
                     }
 
-                    while ((!phone.equals(number)) && (originateResponse.getResponse().equals("Success"))) {
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException ex) {
-                            System.out.println("InterruptedExceptian "+ex);
-                            break;
-                        }
+                    if(!phone.equals(number)) {                       
+                        setErrornumber((Boolean) true);
+                        PushContext pushContext = PushContextFactory.getDefault().getPushContext();        
+                        pushContext.push(channel+1, null);
                     }
                 }
             } catch (IOException | TimeoutException | IllegalArgumentException | IllegalStateException ex) {
@@ -110,7 +101,7 @@ public class AsteriskManager extends AbstractManagerEventListener {
     private String call_status;
     private String comments;
     private String status;
-    private Boolean error;
+    private Boolean errornumber = false;
 //Гетеры и сетеры    
 
     public String getId() {
@@ -188,27 +179,10 @@ public class AsteriskManager extends AbstractManagerEventListener {
 
 //        System.out.println("UniqueId: " + event.getUniqueId());
         id = event.getUniqueId();
-//        if(event.getDestinationChannel()==null || event.getLastData()==null){
-//            error = true;
-//            System.out.println("error = true");
-////            PushContext pushContext = PushContextFactory.getDefault().getPushContext();        
-////            pushContext.push(channel+1, null);
-//        }
-//        else{
-//            error = false;
-//            System.out.println("error = false");
-//        }
-//        System.out.println();
+
 
     }
 
-    public Boolean getError() {
-        return error;
-    }
-
-    public void setError(Boolean error) {
-        this.error = error;
-    }
 
     public String getChannel() {
         return channel;
@@ -216,6 +190,14 @@ public class AsteriskManager extends AbstractManagerEventListener {
 
     public void setChannel(String channel) {
         this.channel = channel;
+    }
+
+    public Boolean getErrornumber() {
+        return errornumber;
+    }
+
+    public void setErrornumber(Boolean errornumber) {
+        this.errornumber = errornumber;
     }
 
 }

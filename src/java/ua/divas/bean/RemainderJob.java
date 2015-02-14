@@ -24,13 +24,13 @@ public class RemainderJob implements Job, Serializable {
         PushContext pushContext = PushContextFactory.getDefault().getPushContext();        
         pushContext.push("/" + jec.getTrigger().getDescription(), jec.getJobDetail().getDescription());
        
-        if(UsersBean.findUsers(jec.getTrigger().getDescription())){
-             System.out.println(jec.getTrigger().getDescription() +  " онлайн!");
-            
-        }else{
-            System.out.println(jec.getTrigger().getDescription() +  " оффлайн!");
-            
-        }
+//        if(UsersBean.findUsers(jec.getTrigger().getDescription())){
+//             System.out.println(jec.getTrigger().getDescription() +  " онлайн!");
+//            
+//        }else{
+//            System.out.println(jec.getTrigger().getDescription() +  " оффлайн!");
+//            
+//        }
        
       
        

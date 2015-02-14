@@ -34,6 +34,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 @NamedQueries({
     @NamedQuery(name = "Notification.findAll", query = "SELECT n FROM Notification n"),
     @NamedQuery(name = "Notification.findById", query = "SELECT n FROM Notification n WHERE n.id = :id"),
+    @NamedQuery(name = "Notification.findServerById", query = "SELECT n.server FROM Notification n WHERE n.id = :id"),    
+    @NamedQuery(name = "Notification.findClientById", query = "SELECT n.client FROM Notification n WHERE n.id = :id"),
     @NamedQuery(name = "Notification.findByVersion", query = "SELECT n FROM Notification n WHERE n.version = :version"),
     @NamedQuery(name = "Notification.findByDat", query = "SELECT n FROM Notification n WHERE n.dat = :dat"),
     @NamedQuery(name = "Notification.findByDescription", query = "SELECT n FROM Notification n WHERE n.description = :description"),
@@ -71,9 +73,9 @@ public class Notification implements Serializable {
     @Column(name = "USER_ID")
     private String userId;
     @Column(name = "SERVER")
-    private Short server;
+    volatile private Short server;
     @Column(name = "CLIENT")
-    private Short client;
+    volatile private Short client;
     @Size(max = 50)
     @Column(name = "TRG_NAME")
     private String trgName;

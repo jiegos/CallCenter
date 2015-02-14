@@ -5,6 +5,7 @@ import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import ua.divas.model.entity.Cdr;
+import ua.divas.model.entity.Kontragents;
 
 
 @Stateless
@@ -27,5 +28,9 @@ public class CdrFacade extends AbstractFacade<Cdr> {
 
     public List<Cdr> findByUserId(String userId){
         return em.createNamedQuery("Cdr.findByUserId").setParameter("userId", userId).getResultList();       
+    }
+    
+     public List<Cdr> findByKontragentId(Kontragents kontragentId){
+        return em.createNamedQuery("Cdr.findByKontragentId").setParameter("kontragentId", kontragentId).getResultList();       
     }
 }

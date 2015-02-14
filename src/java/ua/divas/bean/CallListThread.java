@@ -1,18 +1,14 @@
 package ua.divas.bean;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.RequestScoped;
 import org.asteriskjava.manager.TimeoutException;
 import ua.divas.model.CdrFacade;
 import ua.divas.model.entity.Cdr;
 import ua.divas.model.entity.ContactDetails;
 
-@RequestScoped
-@ManagedBean
-public class CallListThread implements Serializable, Runnable {
+
+public class CallListThread implements Runnable {
 
     Thread thrd;
 
@@ -66,7 +62,7 @@ public class CallListThread implements Serializable, Runnable {
                 try {
                     AsteriskManager am = new AsteriskManager(n, getChannel());                  
                     if (am.getStatus() != null) {
-                        if (am.getStatus().equals("Success")) {
+                        if (am.getStatus().equals("Success") && am.getErrornumber()==false ) {                              
                                 cdr.setAllCallTime(am.getAll_call());
                                 cdr.setCallAnswerTime(am.getCall_answer());
                                 cdr.setCallEndTime(am.getCall_end());
