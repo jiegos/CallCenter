@@ -23,10 +23,12 @@ import org.primefaces.context.RequestContext;
 import org.primefaces.event.FileUploadEvent;
 import ua.divas.model.CallListsFacade;
 import ua.divas.model.ContactDetailsFacade;
+import ua.divas.model.DirFileUploadFacade;
 import ua.divas.model.KontragentsFacade;
 import ua.divas.model.UsersFacade;
 import ua.divas.model.entity.CallLists;
 import ua.divas.model.entity.ContactDetails;
+import ua.divas.model.entity.DirFileUpload;
 import ua.divas.model.entity.Kontragents;
 import ua.divas.model.entity.Users;
 
@@ -34,7 +36,9 @@ import ua.divas.model.entity.Users;
 @ManagedBean
 public class FileUploadView implements Serializable {
 
-    private final String destination = "/home/igor/tmp/";
+//    private final String destination = "/home/igor/tmp/";    
+    
+    private String destination;
     @EJB
     private CallListsFacade clf;
     CallLists cl;
@@ -42,7 +46,10 @@ public class FileUploadView implements Serializable {
     @EJB
     private UsersFacade uf;
     Users usr;
-
+    
+    @EJB
+    private DirFileUploadFacade dfuf;
+    
     @EJB
     private KontragentsFacade kf;
     Kontragents kontr;
@@ -66,7 +73,9 @@ public class FileUploadView implements Serializable {
         } catch (IOException ex) {
             System.out.println("Ошибка " + ex);
         }
-
+        for(DirFileUpload up : dfuf.findAll()){            
+            destination = up.getDirectory();
+        }
         String csvFile = destination + event.getFile().getFileName();
         BufferedReader br = null;
         String line = "";
@@ -163,6 +172,9 @@ public class FileUploadView implements Serializable {
     public void TransferFile(String fileName, InputStream in) {
         try {
             // write the inputStream to a FileOutputStream
+            for(DirFileUpload up : dfuf.findAll()){            
+                 destination = up.getDirectory();
+            }
             OutputStream out = new FileOutputStream(new File(destination + fileName));
 
             int read = 0;

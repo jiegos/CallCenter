@@ -95,7 +95,7 @@
                         <p:fileUpload    
                             rendered="#{viewListsBean.render5}"                                
                             mode="advanced"
-                            update="messages" 
+                            update="mess" 
                             auto="true" label="Выберите файл (*.csv)" 
                             sizeLimit="10000000"
                             allowTypes="/(\.|\/)(csv)$/"
@@ -437,7 +437,7 @@
                                  paginator="true" rowKey="#{item.id}" paginatorPosition="bottom" rowStyleClass="#{item.client eq 0 and item.server eq 1 ? 'red':'black'}">                                        
                          <p:ajax event="rowSelect" update="checkBut delBut searchBut"/>
                          <p:ajax event="rowUnselect" update="checkBut delBut searchBut"/>
-                        <p:column>
+                         <p:column sortBy="#{item.dat}">
                             <f:facet name="header">
                                 <h:outputText value="Дата и время"/>
                             </f:facet>

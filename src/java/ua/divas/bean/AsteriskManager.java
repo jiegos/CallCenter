@@ -23,11 +23,13 @@ public class AsteriskManager extends AbstractManagerEventListener {
     
     public String number;
     private String channel;
+    private ManagerConnectionFactory factory;
+    private OriginateAction originateAction;
     
-    public AsteriskManager(String number, String channel) throws IOException, IllegalArgumentException, TimeoutException {
-        ManagerConnectionFactory factory = new ManagerConnectionFactory(
-                "213.136.80.108", 5438, "admin", "30091992Igor");
+    public AsteriskManager(String number, String channel,  ManagerConnectionFactory factory, OriginateAction originateAction) throws IOException, IllegalArgumentException, TimeoutException {
+        this.factory = factory;
         this.number = number;
+        this.originateAction = originateAction;
         this.managerConnection = factory.createManagerConnection();
         this.channel=channel;
         run();
@@ -37,14 +39,14 @@ public class AsteriskManager extends AbstractManagerEventListener {
     public void run() {
 
         //Create Originate action
-        OriginateAction originateAction;
+//        OriginateAction originateAction;
         ManagerResponse originateResponse;
 
-        originateAction = new OriginateAction();
-        originateAction.setChannel("SIP/100");
-        originateAction.setContext("phones");
+//        originateAction = new OriginateAction();
+//        originateAction.setChannel("SIP/100");
+//        originateAction.setContext("phones");
         originateAction.setExten(number);
-        originateAction.setPriority(1);
+//        originateAction.setPriority(1);
 
         try {
             // connect to Asterisk and log in

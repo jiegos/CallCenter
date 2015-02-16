@@ -15,9 +15,12 @@ import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import org.asteriskjava.manager.ManagerConnectionFactory;
+import org.asteriskjava.manager.action.OriginateAction;
 import org.primefaces.context.RequestContext;
 import org.primefaces.event.CloseEvent;
 import org.primefaces.event.SelectEvent;
+import ua.divas.model.AsterSettingsFacade;
 import ua.divas.model.CallListsFacade;
 import ua.divas.model.CallLogFacade;
 import ua.divas.model.CallResultsFacade;
@@ -25,6 +28,7 @@ import ua.divas.model.CallStatusFacade;
 import ua.divas.model.CdrFacade;
 import ua.divas.model.ContactDetailsFacade;
 import ua.divas.model.UsersFacade;
+import ua.divas.model.entity.AsterSettings;
 import ua.divas.model.entity.CallLists;
 import ua.divas.model.entity.CallLog;
 import ua.divas.model.entity.CallResults;
@@ -67,9 +71,14 @@ public class ViewListsBean implements Serializable {
     @EJB
     private CdrFacade f;
     Cdr cdr = new Cdr();
+
+    @EJB
+    private AsterSettingsFacade asf;
+    AsterSettings setting = new AsterSettings();
+
     @ManagedProperty(value = "#{remainderBean}")
     private RemainderBean remainderBeanChannel;
-    
+
     @ManagedProperty(value = "#{operatorInfoBean}")
     private OperatorInfoBean infoBean;
 
@@ -80,7 +89,7 @@ public class ViewListsBean implements Serializable {
     private ArrayList<String> viewlists;
     private ArrayList<String> table2;
     private List<CallLists> selectedLists;
-    private List<Kontragents> selectedLists2;    
+    private List<Kontragents> selectedLists2;
     private ArrayList<ContactDetails> selectedLists1;
     private ArrayList<ContactDetails> selectedLists3;
     private ArrayList<ContactDetails> selectedLists4;
@@ -106,6 +115,8 @@ public class ViewListsBean implements Serializable {
     private Boolean continuecall = true;
     private String buttontitle;
     private String newlistname;
+    private OriginateAction originateAction;
+    private ManagerConnectionFactory factory;
 //Поиск созданых листов оператора и отображение
 
     @PostConstruct
@@ -115,6 +126,22 @@ public class ViewListsBean implements Serializable {
         if (bean != null) {
             userlogin = bean.getUsr();
         }
+        if (asf.findAll().size() > 0) {
+            for(AsterSettings as : asf.findAll()){
+                setting = as;
+            }
+            setFactory(new ManagerConnectionFactory(
+                    setting.getServer(), Integer.parseInt(setting.getPort()), setting.getLoginAm(), setting.getPassAm()));
+            setOriginateAction(new OriginateAction());
+            getOriginateAction().setChannel(setting.getChannel());
+            getOriginateAction().setContext(setting.getContext());
+            getOriginateAction().setPriority(Integer.parseInt(setting.getPriority()));
+            
+            System.out.println("Настройки астериска загружены");
+        } else {
+            System.out.println("Нет настроек астериска в базе данных!");
+        }
+
     }
 
     public void findLists() {
@@ -163,7 +190,7 @@ public class ViewListsBean implements Serializable {
                 selectedLists3.add(cd);
             }
         }
-        
+
         selectedLists1 = new ArrayList<>();
         ArrayList<Kontragents> tmp = new ArrayList<>();
         for (ContactDetails cd : selectedLists3) {
@@ -199,7 +226,7 @@ public class ViewListsBean implements Serializable {
         }
         leftcall = "" + selectedLists1.size();
         pollstop = false;
-        clt = new CallListThread(f, UserId, list, selectedLists1, remainderBeanChannel.getChannel());
+        clt = new CallListThread(f, UserId, list, selectedLists1, remainderBeanChannel.getChannel(), getFactory(), getOriginateAction());
         allcall = "" + selectedLists1.size();
         countcall = 0;
         fullname = (selectedLists1.get(countcall).getKontragId().getFullname());
@@ -220,7 +247,7 @@ public class ViewListsBean implements Serializable {
         if (!clt.getPollstop() && !clt.getError()) {
             System.out.println("Идет звонок!");
         } else {
-            infoBean.construct();        
+            infoBean.construct();
             RequestContext.getCurrentInstance().update("infoForm");
             RequestContext.getCurrentInstance().update("resultCallForm:cb10");
             RequestContext.getCurrentInstance().update("resultCallForm:cb11");
@@ -247,10 +274,10 @@ public class ViewListsBean implements Serializable {
     public void testButton() {
         FacesMessage message = new FacesMessage("При наборе номера произошла ошибка!");
         FacesContext.getCurrentInstance().addMessage(null, message);
-        
-        infoBean.construct();        
+
+        infoBean.construct();
         RequestContext.getCurrentInstance().update("infoForm");
-        
+
         RequestContext.getCurrentInstance().update("resultCallForm:cb10");
         RequestContext.getCurrentInstance().update("resultCallForm:cb11");
         System.out.println("Звонок прекращен");
@@ -295,10 +322,9 @@ public class ViewListsBean implements Serializable {
 
         String UserId = null;
 
-            for (Users u : uf.findByLogin(userlogin)) {
-                UserId = u.getId();
-            }
-      
+        for (Users u : uf.findByLogin(userlogin)) {
+            UserId = u.getId();
+        }
 
 //Заполнение CallLog---------START--------
         for (CallResults r : resf.findAll()) {
@@ -333,7 +359,7 @@ public class ViewListsBean implements Serializable {
 //СallLog -------------------------END-----------------------
 
         if (selectedLists4 != null) {
-            clt = new CallListThread(f, UserId, list2, selectedLists4, remainderBeanChannel.getChannel());
+            clt = new CallListThread(f, UserId, list2, selectedLists4, remainderBeanChannel.getChannel(), getFactory(), getOriginateAction());
             continuecall = true;
         }
 
@@ -361,7 +387,6 @@ public class ViewListsBean implements Serializable {
     }
 
 //Меню - Листы обзвона - Кнопка "Показать все"
-
     public void showAllLists() {
         findLists();
         render4 = true;
@@ -696,6 +721,22 @@ public class ViewListsBean implements Serializable {
 
     public void setInfoBean(OperatorInfoBean infoBean) {
         this.infoBean = infoBean;
+    }
+
+    public OriginateAction getOriginateAction() {
+        return originateAction;
+    }
+
+    public void setOriginateAction(OriginateAction originateAction) {
+        this.originateAction = originateAction;
+    }
+
+    public ManagerConnectionFactory getFactory() {
+        return factory;
+    }
+
+    public void setFactory(ManagerConnectionFactory factory) {
+        this.factory = factory;
     }
 
 }

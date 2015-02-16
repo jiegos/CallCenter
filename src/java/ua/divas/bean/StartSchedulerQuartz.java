@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.servlet.GenericServlet;
 import javax.servlet.ServletConfig;
@@ -14,61 +15,75 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SchedulerFactory;
 import org.quartz.impl.StdSchedulerFactory;
-
+import ua.divas.model.QuartzPropertyFacade;
+import ua.divas.model.entity.QuartzProperty;
 
 public class StartSchedulerQuartz extends GenericServlet {
-    
+
     public static Scheduler sched;
-    
+
+    @EJB
+    private QuartzPropertyFacade qpf;
+    private QuartzProperty p;
+
     public void init(ServletConfig config) throws ServletException {
- 
         super.init(config);
-        
-        Properties prop = new Properties();
+        if (qpf.findAll().size() > 0) {
+            for (QuartzProperty qp : qpf.findAll()) {
+                p = qp;
+                System.out.println("Настроки Quartz загружены!");
+            }
+            Properties prop = new Properties();
 
-        prop.setProperty("org.quartz.scheduler.instanceName", "REMAINDER_SCHEDULER");
-        prop.setProperty("org.quartz.threadPool.class", "org.quartz.simpl.SimpleThreadPool");
-        prop.setProperty("org.quartz.threadPool.threadCount", "10");
+            prop.setProperty("org.quartz.scheduler.instanceName", p.getInstanceName());
+            prop.setProperty("org.quartz.threadPool.class", p.getThreadpoolClass());
+            prop.setProperty("org.quartz.threadPool.threadCount", p.getThreadCount());
 
-        prop.setProperty("org.quartz.threadPool.threadsInheritContextClassLoaderOfInitializingThread", "true");
+            prop.setProperty("org.quartz.threadPool.threadsInheritContextClassLoaderOfInitializingThread", p.getThreadsContext());
 
-        prop.setProperty("org.quartz.jobStore.class", "org.quartz.impl.jdbcjobstore.JobStoreTX");
-        prop.setProperty("org.quartz.jobStore.driverDelegateClass", "org.quartz.impl.jdbcjobstore.oracle.OracleDelegate");
-        prop.setProperty("org.quartz.jobStore.dataSource", "divas");
-        prop.setProperty("org.quartz.jobStore.tablePrefix", "QRTZ_");
+            prop.setProperty("org.quartz.jobStore.class", p.getJobstoreClass());
+            prop.setProperty("org.quartz.jobStore.driverDelegateClass", p.getDriverDelegate());
+            prop.setProperty("org.quartz.jobStore.dataSource", p.getDataSource());
+            prop.setProperty("org.quartz.jobStore.tablePrefix", p.getTablePrefix());
 
-        prop.setProperty("org.quartz.dataSource.divas.driver", "oracle.jdbc.driver.OracleDriver");
-        prop.setProperty("org.quartz.dataSource.divas.URL", "jdbc:oracle:thin:@192.168.1.102:1521:db12c");
-        prop.setProperty("org.quartz.dataSource.divas.user", "dba_divas");
-        prop.setProperty("org.quartz.dataSource.divas.password", "divas");
-        prop.setProperty("org.quartz.dataSource.divas.maxConnections", "1");
-        
-        try {             
-            SchedulerFactory sf = new StdSchedulerFactory(prop);            
-            sched = sf.getScheduler();
-            sched.start();
-            System.out.println("Шедулер стартовал");
-            
-        } catch (SchedulerException e) {
-            System.out.println("Ошибка " + e);
+            prop.setProperty("org.quartz.dataSource.divas.driver", p.getDriver());
+            prop.setProperty("org.quartz.dataSource.divas.URL", p.getUrl());
+            prop.setProperty("org.quartz.dataSource.divas.user", p.getUsr());
+            prop.setProperty("org.quartz.dataSource.divas.password", p.getPassword());
+            prop.setProperty("org.quartz.dataSource.divas.maxConnections", p.getMaxConnections());
+
+            try {
+                SchedulerFactory sf = new StdSchedulerFactory(prop);
+                sched = sf.getScheduler();
+                sched.start();
+                System.out.println("Шедулер стартовал");
+
+            } catch (SchedulerException e) {
+                System.out.println("Ошибка " + e);
+            }
+
+        } else {
+            System.out.println("В базе данных нет настроек Quartz!");
         }
+
     }
-    public void destroy(){
-       
+
+    public void destroy() {
+
         try {
             sched.shutdown();
             System.out.println("Шедулер остановлен");
         } catch (SchedulerException ex) {
             Logger.getLogger(StartSchedulerQuartz.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
     }
- 
+
     @Override
     public void service(
-            ServletRequest arg0, 
+            ServletRequest arg0,
             ServletResponse arg1
     ) throws ServletException, IOException {
- 
+
     }
 }

@@ -7,7 +7,6 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.RequestScoped;
 import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
 import ua.divas.model.CdrFacade;
 import ua.divas.model.ContactDetailsFacade;
 import ua.divas.model.UsersFacade;
@@ -29,14 +28,13 @@ public class ButtonCall implements Serializable {
     private UsersFacade uf;
     @EJB
     private ContactDetailsFacade cdf;
-    
-    
+
     @ManagedProperty(value = "#{remainderBean}")
     private RemainderBean remainderBeanChannel;
-    
+
     @ManagedProperty(value = "#{agentsTableBean}")
     private AgentsTableBean agent;
-    
+
     public String getNumber() {
         return number;
     }
@@ -46,20 +44,22 @@ public class ButtonCall implements Serializable {
     }
 
     public void buttonAction() {
-         String UserId = null;
+        String UserId = null;
         Map sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
         Login bean = (Login) sessionMap.get("login");
         if (bean != null) {
             String userlogin = bean.getUsr();
             for (Users u : uf.findByLogin(userlogin)) {
-                UserId= u.getId();
+                UserId = u.getId();
             }
         }
         System.out.println(number);
-        CallThread ct = new CallThread(number,f,cdf,UserId, remainderBeanChannel.getChannel());
+        CallThread ct = new CallThread(number, f, cdf, UserId, remainderBeanChannel.getChannel(),
+                agent.getListBean().getFactory(),
+                agent.getListBean().getOriginateAction());
     }
-    
-    public void bCall(){
+
+    public void bCall() {
         number = getAgent().getSelectedRow().getPhone();
         buttonAction();
     }

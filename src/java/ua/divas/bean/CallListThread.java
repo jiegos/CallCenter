@@ -2,8 +2,11 @@ package ua.divas.bean;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import org.asteriskjava.manager.ManagerConnectionFactory;
 import org.asteriskjava.manager.TimeoutException;
+import org.asteriskjava.manager.action.OriginateAction;
 import ua.divas.model.CdrFacade;
+import ua.divas.model.entity.AsterSettings;
 import ua.divas.model.entity.Cdr;
 import ua.divas.model.entity.ContactDetails;
 
@@ -16,10 +19,8 @@ public class CallListThread implements Runnable {
 
     }
 
-    public CallListThread(CdrFacade f, String UserId, ArrayList<String> list, ArrayList<ContactDetails> selectedLists3, String channel) {
-        this.callcheck = true;
-        thrd = new Thread(this);
-        thrd.start();
+    public CallListThread(CdrFacade f, String UserId, ArrayList<String> list, ArrayList<ContactDetails> selectedLists3, String channel, ManagerConnectionFactory factory, OriginateAction originateAction) {
+        this.callcheck = true;        
         this.f = f;
         this.UserId = UserId;
         this.list = list;
@@ -29,6 +30,10 @@ public class CallListThread implements Runnable {
         this.pollstop = false;
         this.error = false;
         this.channel = channel;
+        this.originateAction = originateAction;
+        this.factory = factory;
+        thrd = new Thread(this);
+        thrd.start();
     }
 
     Cdr cdr = new Cdr();
@@ -42,6 +47,9 @@ public class CallListThread implements Runnable {
     private Boolean pollstop;
     private Boolean error;
     private String channel;
+    private ManagerConnectionFactory factory;
+    private OriginateAction originateAction;
+    
 
     public void run() {       
                
@@ -60,7 +68,7 @@ public class CallListThread implements Runnable {
                 list2.remove(n);
                 selectedLists4.remove(selectedLists3.get(i));
                 try {
-                    AsteriskManager am = new AsteriskManager(n, getChannel());                  
+                    AsteriskManager am = new AsteriskManager(n, getChannel(), factory, originateAction);                  
                     if (am.getStatus() != null) {
                         if (am.getStatus().equals("Success") && am.getErrornumber()==false ) {                              
                                 cdr.setAllCallTime(am.getAll_call());

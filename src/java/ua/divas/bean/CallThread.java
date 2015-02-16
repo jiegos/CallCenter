@@ -10,7 +10,9 @@ import java.io.IOException;
 import java.io.Serializable;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.RequestScoped;
+import org.asteriskjava.manager.ManagerConnectionFactory;
 import org.asteriskjava.manager.TimeoutException;
+import org.asteriskjava.manager.action.OriginateAction;
 import ua.divas.model.CdrFacade;
 import ua.divas.model.ContactDetailsFacade;
 import ua.divas.model.entity.Cdr;
@@ -30,14 +32,16 @@ public class CallThread implements Serializable, Runnable {
         
     }
 
-    public CallThread(String number, CdrFacade f, ContactDetailsFacade cdf, String UserId, String channel) {
+    public CallThread(String number, CdrFacade f, ContactDetailsFacade cdf, String UserId, String channel,  ManagerConnectionFactory factory, OriginateAction originateAction) {
         this.number = number;
         thrd=new Thread(this);
         thrd.start();
         this.f=f;
         this.cdf=cdf;
         this.UserId=UserId;
-        this.channel = channel;
+        this.channel = channel;        
+        this.originateAction = originateAction;
+        this.factory = factory;
     }
     
     
@@ -47,11 +51,13 @@ public class CallThread implements Serializable, Runnable {
     private ContactDetailsFacade cdf;
     private String UserId;
     private String channel;
+    private ManagerConnectionFactory factory;
+    private OriginateAction originateAction;
     
     public void run() {
        
         try {
-            AsteriskManager am = new AsteriskManager(number, channel);
+            AsteriskManager am = new AsteriskManager(number, channel, factory, originateAction);
             cdr.setAllCallTime(am.getAll_call());
             cdr.setCallAnswerTime(am.getCall_answer());
             cdr.setCallEndTime(am.getCall_end());
