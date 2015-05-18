@@ -1,5 +1,5 @@
 --------------------------------------------------------
---  File created - Monday-February-16-2015   
+--  File created - Monday-May-18-2015   
 --------------------------------------------------------
 --------------------------------------------------------
 --  DDL for Sequence ORDERS_NUM_SEQ
@@ -90,6 +90,19 @@
 	"CALL_ANSWER_TIME" DATE, 
 	"CALL_END_TIME" DATE, 
 	"ALL_CALL_TIME" NUMBER(10,0), 
+	"CALL_STATUS" VARCHAR2(20 BYTE), 
+	"PHONE" VARCHAR2(50 CHAR)
+   ) ;
+--------------------------------------------------------
+--  DDL for Table CDR_3CX
+--------------------------------------------------------
+
+  CREATE TABLE "CDR_3CX" 
+   (	"ID" VARCHAR2(50 CHAR), 
+	"KONTRAGENT_ID" VARCHAR2(50 BYTE), 
+	"USER_ID" VARCHAR2(50 CHAR), 
+	"CALL_START_TIME" DATE, 
+	"DURATION" NUMBER(10,0), 
 	"CALL_STATUS" VARCHAR2(20 BYTE), 
 	"PHONE" VARCHAR2(50 CHAR)
    ) ;
@@ -371,6 +384,15 @@
 	"TYPEDEF_ID" VARCHAR2(50 CHAR), 
 	"PREFIX" VARCHAR2(20 CHAR), 
 	"VERSION" TIMESTAMP (6) DEFAULT systimestamp
+   ) ;
+--------------------------------------------------------
+--  DDL for Table OPERATORES_PHONES
+--------------------------------------------------------
+
+  CREATE TABLE "OPERATORES_PHONES" 
+   (	"ID" VARCHAR2(20 BYTE), 
+	"OPERATOR" VARCHAR2(20 BYTE), 
+	"PHONE" VARCHAR2(20 BYTE)
    ) ;
 --------------------------------------------------------
 --  DDL for Table ORDERS
@@ -805,6 +827,12 @@
   CREATE UNIQUE INDEX "CALL_STATUS_PK" ON "CALL_STATUS" ("ID") 
   ;
 --------------------------------------------------------
+--  DDL for Index CDR_3CX_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "CDR_3CX_PK" ON "CDR_3CX" ("ID") 
+  ;
+--------------------------------------------------------
 --  DDL for Index CDR_PK
 --------------------------------------------------------
 
@@ -1075,6 +1103,12 @@
   CREATE UNIQUE INDEX "NUMERATOR_PK" ON "NUMERATOR" ("ID") 
   ;
 --------------------------------------------------------
+--  DDL for Index OPERATORES_PHONES_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "OPERATORES_PHONES_PK" ON "OPERATORES_PHONES" ("ID") 
+  ;
+--------------------------------------------------------
 --  DDL for Index ORDERS_PK
 --------------------------------------------------------
 
@@ -1340,14 +1374,9 @@
 --  Constraints for Table CALL_LOG
 --------------------------------------------------------
 
-  ALTER TABLE "CALL_LOG" MODIFY ("DAT" NOT NULL ENABLE);
   ALTER TABLE "CALL_LOG" MODIFY ("ID" NOT NULL ENABLE);
-  ALTER TABLE "CALL_LOG" MODIFY ("VERSION" NOT NULL ENABLE);
   ALTER TABLE "CALL_LOG" ADD CONSTRAINT "CALL_LOG_PK" PRIMARY KEY ("ID")
   USING INDEX  ENABLE;
-  ALTER TABLE "CALL_LOG" MODIFY ("CALL_STATUS" NOT NULL ENABLE);
-  ALTER TABLE "CALL_LOG" MODIFY ("CONTACT_ID" NOT NULL ENABLE);
-  ALTER TABLE "CALL_LOG" MODIFY ("CALL_RESULTS" NOT NULL ENABLE);
 --------------------------------------------------------
 --  Constraints for Table CALL_MEMO
 --------------------------------------------------------
@@ -1385,6 +1414,15 @@
   USING INDEX  ENABLE;
   ALTER TABLE "CDR" MODIFY ("PHONE" NOT NULL ENABLE);
   ALTER TABLE "CDR" MODIFY ("USER_ID" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table CDR_3CX
+--------------------------------------------------------
+
+  ALTER TABLE "CDR_3CX" MODIFY ("ID" NOT NULL ENABLE);
+  ALTER TABLE "CDR_3CX" MODIFY ("USER_ID" NOT NULL ENABLE);
+  ALTER TABLE "CDR_3CX" MODIFY ("PHONE" NOT NULL ENABLE);
+  ALTER TABLE "CDR_3CX" ADD CONSTRAINT "CDR_3CX_PK" PRIMARY KEY ("ID")
+  USING INDEX  ENABLE;
 --------------------------------------------------------
 --  Constraints for Table COMPAIGNS
 --------------------------------------------------------
@@ -1633,6 +1671,13 @@
   ALTER TABLE "NUMERATOR" MODIFY ("TYPEDEF_ID" NOT NULL ENABLE);
   ALTER TABLE "NUMERATOR" MODIFY ("VERSION" NOT NULL ENABLE);
   ALTER TABLE "NUMERATOR" ADD CONSTRAINT "NUMERATOR_PK" PRIMARY KEY ("ID")
+  USING INDEX  ENABLE;
+--------------------------------------------------------
+--  Constraints for Table OPERATORES_PHONES
+--------------------------------------------------------
+
+  ALTER TABLE "OPERATORES_PHONES" MODIFY ("ID" NOT NULL ENABLE);
+  ALTER TABLE "OPERATORES_PHONES" ADD CONSTRAINT "OPERATORES_PHONES_PK" PRIMARY KEY ("ID")
   USING INDEX  ENABLE;
 --------------------------------------------------------
 --  Constraints for Table ORDERS
