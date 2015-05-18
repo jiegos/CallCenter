@@ -33,9 +33,8 @@ public class ContactDetailsFacade extends AbstractFacade<ContactDetails> {
     
      public List<ContactDetails> findByKontragentId(Kontragents kontragId){
         return em.createNamedQuery("ContactDetails.findByKontragentId").setParameter("kontragId", kontragId).getResultList();     
-    }
-     
-    
+    }   
+       
       public List<String>  findPhones(Kontragents kontragId){
         return em.createNamedQuery("ContactDetails.findPhones").setParameter("kontragId", kontragId).getResultList();     
     }

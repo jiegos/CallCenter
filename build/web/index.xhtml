@@ -16,7 +16,9 @@
                 <p:outputLabel value="Введите логин: "/>
                 <p:inputText value="#{login.usr}"/>
                 <p:outputLabel value="Введите пароль: "/>
-                <p:password value="#{login.pass}"/>
+                <p:password value="#{login.pass}"/>                
+                <p:outputLabel value="Введите номер вашего телефона: "/>
+                <p:inputText value="#{login.phone}"/>
                 <f:facet name="footer">
                     <p:commandButton  value="Войти" action="#{login.loginControl}"/>
                 </f:facet>                

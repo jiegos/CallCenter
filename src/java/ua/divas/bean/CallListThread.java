@@ -6,7 +6,6 @@ import org.asteriskjava.manager.ManagerConnectionFactory;
 import org.asteriskjava.manager.TimeoutException;
 import org.asteriskjava.manager.action.OriginateAction;
 import ua.divas.model.CdrFacade;
-import ua.divas.model.entity.AsterSettings;
 import ua.divas.model.entity.Cdr;
 import ua.divas.model.entity.ContactDetails;
 

@@ -32,7 +32,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "CallLog.findAll", query = "SELECT c FROM CallLog c"),
-    @NamedQuery(name = "CallLog.findById", query = "SELECT c FROM CallLog c WHERE c.id = :id"),
+    @NamedQuery(name = "CallLog.findById", query = "SELECT c FROM CallLog c WHERE c.id = :id"),    
+    @NamedQuery(name = "CallLog.findByContact_Id", query = "SELECT c FROM CallLog c WHERE c.contactId = :contactId"),
     @NamedQuery(name = "CallLog.findByMemo", query = "SELECT c FROM CallLog c WHERE c.memo = :memo"),
     @NamedQuery(name = "CallLog.findByVersion", query = "SELECT c FROM CallLog c WHERE c.version = :version"),
     @NamedQuery(name = "CallLog.findByDat", query = "SELECT c FROM CallLog c WHERE c.dat = :dat")})
@@ -40,8 +41,7 @@ public class CallLog implements Serializable {
     @JoinColumn(name = "CALL_RESULTS", referencedColumnName = "ID")
     @ManyToOne(optional = false)
     private CallResults callResults;
-    @Basic(optional = false)
-    @NotNull
+    @Basic(optional = false)    
     @Size(min = 1, max = 50)
     @Column(name = "CALL_RESULTS")    
     private static final long serialVersionUID = 1L;
@@ -55,12 +55,10 @@ public class CallLog implements Serializable {
     @Column(name = "MEMO")
     private String memo;
     @Basic(optional = false)
-    @NotNull
     @Column(name = "VERSION")
     @Temporal(TemporalType.TIMESTAMP)
     private Date version;
     @Basic(optional = false)
-    @NotNull
     @Column(name = "DAT")
     @Temporal(TemporalType.TIMESTAMP)
     private Date dat;

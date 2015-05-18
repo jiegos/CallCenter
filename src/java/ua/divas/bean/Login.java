@@ -6,6 +6,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.UUID;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -14,7 +15,10 @@ import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import org.primefaces.context.RequestContext;
+import ua.divas.model.OperatoresPhonesFacade;
 import ua.divas.model.UsersFacade;
+import ua.divas.model.entity.Kontragents;
+import ua.divas.model.entity.OperatoresPhones;
 import ua.divas.model.entity.Users;
 
 @SessionScoped
@@ -26,6 +30,9 @@ public class Login implements Serializable {
     @EJB
     private UsersFacade uf;
     Users user = new Users();
+    @EJB
+    private OperatoresPhonesFacade opf;
+    OperatoresPhones phones = new OperatoresPhones();
 
     @ManagedProperty(value = "#{usersBean}")
     private UsersBean bean;
@@ -34,30 +41,49 @@ public class Login implements Serializable {
     private String firstname;
     private String lastname;
     private String email;
-    public boolean isLogged=false;
-  
+    private String phone;
+    public boolean isLogged = false;
+    private List<OperatoresPhones> phonesList;
+
 //Метод для проверки наличия пользователя и пароля в базе     
-    public String loginControl(){
-       if(uf.logincheck(usr, md5(pass))){      
-             isLogged=true;
-             bean.addUser(usr);
-             return "welcome.xhtml?faces-redirect=true";
-       }
-       
-       RequestContext.getCurrentInstance().update("growl");
-       FacesContext context = FacesContext.getCurrentInstance();
-       context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,"Ошибка","Неправильный логин или пароль!"));
-       return "";
+    public String loginControl() {
+        if (uf.logincheck(usr, md5(pass))) {
+            isLogged = true;
+            bean.addUser(usr);
+            phonesList = opf.findAll();
+            for (OperatoresPhones op : phonesList) {
+                if (usr.equals(op.getOperator())) {
+                    op.setPhone(phone);
+                    opf.edit(op);                    
+                    System.out.println(phones + "Изменен");
+                } else {
+                    phones.setId(UUID.randomUUID().toString().substring(0, 8));
+                    phones.setOperator(usr);
+                    phones.setPhone(phone);
+                    opf.create(phones);                                        
+                    System.out.println(phones + "Добавлено");
+                }
+            }
+           
+            return "welcome.xhtml?faces-redirect=true";
+        }
+
+        RequestContext.getCurrentInstance().update("growl");
+        FacesContext context = FacesContext.getCurrentInstance();
+        context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Ошибка", "Неправильный логин или пароль!"));
+        return "";
     }
-    public String logout(){        
-        isLogged=false;
+
+    public String logout() {
+        isLogged = false;
         bean.delUser(usr);
         return "index.xhtml?faces-redirect=true";
     }
+
     private static String md5(String input) {
 
         String md5 = null;
-        
+
         if (null == input) {
             return null;
         }
@@ -137,6 +163,22 @@ public class Login implements Serializable {
 
     public void setBean(UsersBean bean) {
         this.bean = bean;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public List<OperatoresPhones> getPhonesList() {
+        return phonesList;
+    }
+
+    public void setPhonesList(List<OperatoresPhones> phonesList) {
+        this.phonesList = phonesList;
     }
 
 }

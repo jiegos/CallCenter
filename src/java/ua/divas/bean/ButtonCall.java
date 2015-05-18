@@ -7,6 +7,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.RequestScoped;
 import javax.faces.context.FacesContext;
+import org.primefaces.context.RequestContext;
 import ua.divas.model.CdrFacade;
 import ua.divas.model.ContactDetailsFacade;
 import ua.divas.model.UsersFacade;
@@ -60,7 +61,7 @@ public class ButtonCall implements Serializable {
     }
 
     public void bCall() {
-        number = getAgent().getSelectedRow().getPhone();
+        number = getAgent().getSelectedRow().getContactId().getPhone();
         buttonAction();
     }
 

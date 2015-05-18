@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.UUID;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
@@ -79,8 +78,8 @@ public class ViewListsBean implements Serializable {
     @ManagedProperty(value = "#{remainderBean}")
     private RemainderBean remainderBeanChannel;
 
-    @ManagedProperty(value = "#{operatorInfoBean}")
-    private OperatorInfoBean infoBean;
+//    @ManagedProperty(value = "#{operatorInfoBean}")
+//    private OperatorInfoBean infoBean;
 
     private String userlogin;
 
@@ -93,6 +92,7 @@ public class ViewListsBean implements Serializable {
     private ArrayList<ContactDetails> selectedLists1;
     private ArrayList<ContactDetails> selectedLists3;
     private ArrayList<ContactDetails> selectedLists4;
+    private List<CallLog> tableLog;
     private String header;
     private String tablename;
     private String fullname;
@@ -201,6 +201,7 @@ public class ViewListsBean implements Serializable {
                 }
             }
         }
+           
         header = event.getObject().toString();
         render = false;
         render2 = true;
@@ -243,60 +244,60 @@ public class ViewListsBean implements Serializable {
     }
 //Проверка завершен ли звонок
 
-    public void isStopped() {
-        if (!clt.getPollstop() && !clt.getError()) {
-            System.out.println("Идет звонок!");
-        } else {
-            infoBean.construct();
-            RequestContext.getCurrentInstance().update("infoForm");
-            RequestContext.getCurrentInstance().update("resultCallForm:cb10");
-            RequestContext.getCurrentInstance().update("resultCallForm:cb11");
-            System.out.println("Звонок прекращен");
-            countcall++;
-            if ((countcall) < (selectedLists1.size())) {
-                list2 = clt.getList2();
-                selectedLists4 = clt.getSelectedLists4();
-                leftcall = "" + selectedLists4.size();
-            } else {
-                leftcall = "" + 0;
-                selectedLists4 = null;
-                list2 = null;
-                allcall = null;
-                buttontitle = "Завершить";
-            }
-            continuecall = false;
-            pollstop = true;
-            clt.setCallcheck(callcheck = false);
-        }
-    }
+//    public void isStopped() {
+//        if (!clt.getPollstop() && !clt.getError()) {
+//            System.out.println("Идет звонок!");
+//        } else {
+//            infoBean.construct();
+//            RequestContext.getCurrentInstance().update("infoForm");
+//            RequestContext.getCurrentInstance().update("resultCallForm:cb10");
+//            RequestContext.getCurrentInstance().update("resultCallForm:cb11");
+//            System.out.println("Звонок прекращен");
+//            countcall++;
+//            if ((countcall) < (selectedLists1.size())) {
+//                list2 = clt.getList2();
+//                selectedLists4 = clt.getSelectedLists4();
+//                leftcall = "" + selectedLists4.size();
+//            } else {
+//                leftcall = "" + 0;
+//                selectedLists4 = null;
+//                list2 = null;
+//                allcall = null;
+//                buttontitle = "Завершить";
+//            }
+//            continuecall = false;
+//            pollstop = true;
+//            clt.setCallcheck(callcheck = false);
+//        }
+//    }
 //Кнопка
 
-    public void testButton() {
-        FacesMessage message = new FacesMessage("При наборе номера произошла ошибка!");
-        FacesContext.getCurrentInstance().addMessage(null, message);
-
-        infoBean.construct();
-        RequestContext.getCurrentInstance().update("infoForm");
-
-        RequestContext.getCurrentInstance().update("resultCallForm:cb10");
-        RequestContext.getCurrentInstance().update("resultCallForm:cb11");
-        System.out.println("Звонок прекращен");
-        countcall++;
-        if ((countcall) < (selectedLists1.size())) {
-            list2 = clt.getList2();
-            selectedLists4 = clt.getSelectedLists4();
-            leftcall = "" + selectedLists4.size();
-        } else {
-            leftcall = "" + 0;
-            selectedLists4 = null;
-            list2 = null;
-            allcall = null;
-            buttontitle = "Завершить";
-        }
-        continuecall = false;
-        pollstop = true;
-        clt.setCallcheck(callcheck = false);
-    }
+//    public void testButton() {
+//        FacesMessage message = new FacesMessage("При наборе номера произошла ошибка!");
+//        FacesContext.getCurrentInstance().addMessage(null, message);
+//
+//        infoBean.construct();
+//        RequestContext.getCurrentInstance().update("infoForm");
+//
+//        RequestContext.getCurrentInstance().update("resultCallForm:cb10");
+//        RequestContext.getCurrentInstance().update("resultCallForm:cb11");
+//        System.out.println("Звонок прекращен");
+//        countcall++;
+//        if ((countcall) < (selectedLists1.size())) {
+//            list2 = clt.getList2();
+//            selectedLists4 = clt.getSelectedLists4();
+//            leftcall = "" + selectedLists4.size();
+//        } else {
+//            leftcall = "" + 0;
+//            selectedLists4 = null;
+//            list2 = null;
+//            allcall = null;
+//            buttontitle = "Завершить";
+//        }
+//        continuecall = false;
+//        pollstop = true;
+//        clt.setCallcheck(callcheck = false);
+//    }
 //Закрытие диалога
 
     public void onClose(CloseEvent event) {
@@ -453,7 +454,7 @@ public class ViewListsBean implements Serializable {
         Map sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
         Login bean = (Login) sessionMap.get("login");
         if (bean != null) {
-            String userlogin = bean.getUsr();
+            userlogin = bean.getUsr();
             System.out.println(userlogin);
             for (CallLists l : selectedLists) {
                 if (l.getListName().equals(header)) {
@@ -715,13 +716,13 @@ public class ViewListsBean implements Serializable {
         this.selectedLists1 = selectedLists1;
     }
 
-    public OperatorInfoBean getInfoBean() {
-        return infoBean;
-    }
-
-    public void setInfoBean(OperatorInfoBean infoBean) {
-        this.infoBean = infoBean;
-    }
+//    public OperatorInfoBean getInfoBean() {
+//        return infoBean;
+//    }
+//
+//    public void setInfoBean(OperatorInfoBean infoBean) {
+//        this.infoBean = infoBean;
+//    }
 
     public OriginateAction getOriginateAction() {
         return originateAction;
@@ -737,6 +738,14 @@ public class ViewListsBean implements Serializable {
 
     public void setFactory(ManagerConnectionFactory factory) {
         this.factory = factory;
+    }
+
+    public List<CallLog> getTableLog() {
+        return tableLog;
+    }
+
+    public void setTableLog(List<CallLog> tableLog) {
+        this.tableLog = tableLog;
     }
 
 }

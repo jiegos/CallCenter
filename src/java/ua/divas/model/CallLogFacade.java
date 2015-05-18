@@ -6,10 +6,12 @@
 
 package ua.divas.model;
 
+import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import ua.divas.model.entity.CallLog;
+import ua.divas.model.entity.ContactDetails;
 
 /**
  *
@@ -29,4 +31,7 @@ public class CallLogFacade extends AbstractFacade<CallLog> {
         super(CallLog.class);
     }
     
+    public List<CallLog> findByContact_Id(ContactDetails contactId){
+        return em.createNamedQuery("CallLog.findByContact_Id").setParameter("contactId", contactId).getResultList();       
+    }
 }

@@ -7,9 +7,9 @@
     <servlet>
         <servlet-name>Faces Servlet</servlet-name>
         <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
-        <load-on-startup>1</load-on-startup>        
+        <load-on-startup>1</load-on-startup>
         <async-supported>true</async-supported>
-    </servlet>    
+    </servlet>
     <servlet-mapping>
         <servlet-name>Faces Servlet</servlet-name>
         <url-pattern>*.xhtml</url-pattern>
@@ -22,21 +22,21 @@
             <param-value>org.atmosphere.cache.UUIDBroadcasterCache</param-value>
         </init-param>
         <load-on-startup>1</load-on-startup>
-        <async-supported>true</async-supported>         
+        <async-supported>true</async-supported>
     </servlet>
     <servlet-mapping>
         <servlet-name>Push Servlet</servlet-name>
         <url-pattern>/primepush/*</url-pattern>
-    </servlet-mapping> 
+    </servlet-mapping>
     <filter>
         <filter-name>utf8filter</filter-name>
-        <filter-class>ua.divas.bean.filter.UtfFilter</filter-class>    
+        <filter-class>ua.divas.bean.filter.UtfFilter</filter-class>
         <async-supported>true</async-supported>
     </filter>
     <filter-mapping>
         <filter-name>utf8filter</filter-name>
         <url-pattern>/*</url-pattern>
-    </filter-mapping> 
+    </filter-mapping>
     <filter>
         <filter-name>LoggingFilter</filter-name>
         <filter-class>ua.divas.bean.filter.loginFilter</filter-class>
@@ -44,31 +44,31 @@
     </filter>
     <filter-mapping>
         <filter-name>LoggingFilter</filter-name>
-        <url-pattern>/*</url-pattern>        
-    </filter-mapping>     
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
     <session-config>
         <session-timeout>
             30
         </session-timeout>
     </session-config>
     <welcome-file-list>
-        <welcome-file>/index.xhtml</welcome-file>        
+        <welcome-file>/index.xhtml</welcome-file>
     </welcome-file-list>
     <context-param>
         <param-name>primefaces.THEME</param-name>
         <param-value>afterwork</param-value>
-    </context-param> 
-    <!--File upload commons -->  
+    </context-param>
+    <!--File upload commons -->
     <filter>
         <filter-name>PrimeFaces FileUpload Filter</filter-name>
-        <filter-class>org.primefaces.webapp.filter.FileUploadFilter</filter-class>        
+        <filter-class>org.primefaces.webapp.filter.FileUploadFilter</filter-class>
         <async-supported>true</async-supported>
     </filter>
     <filter-mapping>
         <filter-name>PrimeFaces FileUpload Filter</filter-name>
-        <servlet-name>Faces Servlet</servlet-name>        
-    </filter-mapping> 
-    <!--File upload commons --> 
+        <servlet-name>Faces Servlet</servlet-name>
+    </filter-mapping>
+    <!--File upload commons -->
     <servlet>
         <servlet-name>QuartzInitializer</servlet-name>
         <servlet-class>org.quartz.ee.servlet.QuartzInitializerServlet</servlet-class>
@@ -77,8 +77,14 @@
     </servlet>
     <servlet>
         <servlet-name>StartSchedulerQuartz</servlet-name>
-        <servlet-class>ua.divas.bean.StartSchedulerQuartz</servlet-class>      
+        <servlet-class>ua.divas.bean.StartSchedulerQuartz</servlet-class>
         <load-on-startup>2</load-on-startup>
+        <async-supported>true</async-supported>
+    </servlet>
+    <servlet>
+        <servlet-name>StartSocketThread</servlet-name>
+        <servlet-class>ua.divas.bean.StartSocketThread</servlet-class>
+        <load-on-startup>3</load-on-startup>
         <async-supported>true</async-supported>
     </servlet>
 </web-app>

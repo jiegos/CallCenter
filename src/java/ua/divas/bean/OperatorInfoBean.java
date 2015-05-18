@@ -10,10 +10,12 @@ import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
+import ua.divas.model.Cdr3cxFacade;
 import ua.divas.model.CdrFacade;
 import ua.divas.model.KontragentsFacade;
 import ua.divas.model.UsersFacade;
 import ua.divas.model.entity.Cdr;
+import ua.divas.model.entity.Cdr3cx;
 import ua.divas.model.entity.Users;
 
 @SessionScoped
@@ -30,21 +32,23 @@ public class OperatorInfoBean implements Serializable {
     @EJB
     private CdrFacade f;
     Cdr cdr = new Cdr();
+    @EJB
+    Cdr3cxFacade cdrf;
     private int calls;
-    private List<Cdr> info;
+    private List<Cdr> info;    
+    private List<Cdr3cx> info2;
     private String times;
     private String answered;
     private String noanswer;
     private String busytime;
     private String calltime;
-    private List<Cdr> list;
     private int count=0;
     private int count2=0;
     
     @PostConstruct
     public void construct(){
         callInfo();
-        calltimeInfo();
+        calltimeInfo3cx();
     }
     
     public void callInfo(){
@@ -52,18 +56,24 @@ public class OperatorInfoBean implements Serializable {
         int tempcount = 0;
         Map sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
         Login bean = (Login) sessionMap.get("login");
+        String userlogin = null;
         if (bean != null) {
-            String userlogin = bean.getUsr();
+            userlogin = bean.getUsr();
             for (Users u : uf.findByLogin(userlogin)) {
                 UserId= u.getId();               
         
                tempcount=kf.findByUserId(u).size();
             }
         }
-        calls=f.findByUserId(UserId).size();
+//Asterisk        
+//        calls=f.findByUserId(UserId).size();
+        
+//3CX        
+        calls = cdrf.findByUserId(userlogin).size();
         count=tempcount;
         
     }
+
   
     public void calltimeInfo(){
         String UserId = null;
@@ -85,7 +95,7 @@ public class OperatorInfoBean implements Serializable {
         Long busytemp=0L;
         Long calltemp=0L;
         for(Cdr c : info){
-            temp+=c.getAllCallTime();
+            temp+=c.getAllCallTime();            
              if(c.getCallStatus().equals("ANSWERED")){
                 temp_answered=""+(++i);
             }else{
@@ -106,6 +116,38 @@ public class OperatorInfoBean implements Serializable {
         calltime=formatDate(calltemp/1000);
         
        
+    }
+    
+    public void calltimeInfo3cx(){
+        String UserId = null;
+        Map sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
+        Login bean = (Login) sessionMap.get("login");
+        String userlogin = null;
+        if (bean != null) {
+            userlogin = bean.getUsr();
+            for (Users u : uf.findByLogin(userlogin)) {
+                UserId= u.getId();
+            }
+        }
+        info2= cdrf.findByUserId(userlogin);
+        Long temp = 0L;
+        int i = 0;
+        int j = 0;
+        
+        String temp_noanswered=null;
+        String temp_answered=null;
+        for(Cdr3cx c : info2){
+            temp+=c.getDuration();
+             if(c.getCallStatus().equals("Completed")){
+                temp_answered=""+(++i);
+            }else{
+                temp_noanswered=""+(++j);
+            }                       
+        }
+        answered=temp_answered;
+        noanswer=temp_noanswered;
+        times=formatDate(temp);       
+      
     }
     
     public String formatDate(Long time){
@@ -201,6 +243,14 @@ public class OperatorInfoBean implements Serializable {
 
     public void setCount2(int count2) {
         this.count2 = count2;
+    }
+
+    public List<Cdr3cx> getInfo2() {
+        return info2;
+    }
+
+    public void setInfo2(List<Cdr3cx> info2) {
+        this.info2 = info2;
     }
 
 }
